@@ -96,7 +96,9 @@ public class ProfileManager extends AppCompatActivity {
 //            dbManager.insert_in_userProfile(answers[0],answers[1],answers[2],answers[3],answers[4],
 //                    answers[5],answers[6],answers[7], answers[8], answers[9], answers[10]);
 
-                //TODO: redirect to Maps Hompeage
+                //Redirect to Maps Hompeage
+                Intent i = new Intent(getApplicationContext(), MapHomePage.class);
+                startActivity(i);
 
             } else {
 
