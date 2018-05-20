@@ -1,17 +1,22 @@
 package com.stressfreeroads.gradproject;
 
 import android.Manifest;
+import android.app.ActionBar;
+import android.app.Activity;
+import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Button;
+import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
@@ -21,6 +26,10 @@ import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
+import com.here.android.mpa.search.ErrorCode;
+import com.here.android.mpa.search.GeocodeRequest;
+import com.here.android.mpa.search.Location;
+import com.here.android.mpa.search.ResultListener;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -35,12 +44,20 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     // map embedded in the map fragment
     private Map map = null;
 
+
+    private GeocompleteAdapter mGeoAutoCompleteAdapter;
+
+    private CustomAutoCompleteTextView mGeoAutocomplete;
+
     private PositioningManager positionManager;
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private ImageButton m_GetLocationButton;
     private ImageButton m_settingsBtn;
     private SettingsPanel m_settingsPanel;
     private LinearLayout m_settingsLayout;
+    private static final Integer THRESHOLD = 2;
+
+    private GeoCoordinate currentLocation= null;
 
     private MapMarker m_positionIndicatorFixed = null;
 
@@ -51,7 +68,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         public void onPositionUpdated(PositioningManager.LocationMethod method, GeoPosition position,
                                       boolean isMapMatched) {
             if (position != null) {
-               //TODO: mGeoAutoCompleteAdapter.setPosition(position);
+              mGeoAutoCompleteAdapter.setPosition(position);
             }
         }
 
@@ -61,13 +78,35 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         }
     };
 
+    private PositioningManager mPositionManager;
+    private MapMarker mMarker;
+    protected ResultListener<List<Location>> m_listener = new ResultListener<List<Location>>() {
+        @Override
+        public void onCompleted(List<Location> data, ErrorCode error) {
+            if (error == ErrorCode.NONE) {
+                if (data != null && data.size() > 0) {
+                    addMarker(data.get(0).getCoordinate());
+                }
+            }
+        }
+    };
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_ACTION_BAR);
         setContentView(R.layout.activity_map_home_page);
+
 
         //Check required permissions
         requestPermissions();
+
+        //Initialze Map
+        initializeMap();
+
+        //Set Search Action Bar
+        setSearchBar();
 
         //current Location Button
         initGetLocationButton();
@@ -76,7 +115,81 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         initSettingsPanel();
 
 
+    }
 
+    public void initializeMap()
+    {
+        // Search for the map fragment to finish setup by calling init().
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.mapfragment);
+
+        mapFragment.init(new OnEngineInitListener() {
+
+            @Override
+            public void onEngineInitializationCompleted(Error error) {
+                if (error == Error.NONE) {
+                    map = mapFragment.getMap();
+                    map.setProjectionMode(Map.Projection.GLOBE);
+                    map.getPositionIndicator().setVisible(true);
+                    positionManager = PositioningManager.getInstance();
+                    positionManager.addListener(new WeakReference<>(positionListener));
+                    positionManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
+                    currentLocation = PositioningManager.getInstance().getPosition().getCoordinate();
+                    map.setCenter(positionManager.getPosition().getCoordinate(),Map.Animation.BOW);
+                    System.out.println("map.setCentre= "+map.getCenter());
+                    // Set the zoom level to the average between min and max
+                    map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+
+                }else {
+                    System.out.println("ERROR: Cannot initialize Map Fragment");
+                }
+            }
+        });
+
+    }
+
+    public void setSearchBar()
+    {
+        // UI customization
+        android.support.v7.app.ActionBar actionBar = ((AppCompatActivity)this).getSupportActionBar();
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setIcon(android.R.color.transparent);
+        LayoutInflater inflator = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflator.inflate(R.layout.action_bar, null);
+
+        android.support.v7.app.ActionBar.LayoutParams layoutParams = new android.support.v7.app.ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT,
+                ActionBar.LayoutParams.WRAP_CONTENT);
+        actionBar.setCustomView(v, layoutParams);
+
+        mGeoAutocomplete = (CustomAutoCompleteTextView) v.findViewById(R.id.geo_autocomplete);
+        mGeoAutocomplete.setThreshold(THRESHOLD);
+        mGeoAutocomplete.setLoadingIndicator((android.widget.ProgressBar) v
+                .findViewById(R.id.pb_loading_indicator));
+
+        mGeoAutoCompleteAdapter = new GeocompleteAdapter(this,currentLocation);
+        mGeoAutocomplete.setAdapter(mGeoAutoCompleteAdapter);
+
+        mGeoAutocomplete.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                String result = (String) adapterView.getItemAtPosition(position);
+                mGeoAutocomplete.setText(result);
+                GeocodeRequest req = new GeocodeRequest(result);
+                req.setSearchArea(map.getBoundingBox());
+                req.execute(m_listener);
+            }
+        });
+
+        mGeoAutocomplete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!"".equals(mGeoAutocomplete.getText().toString())) {
+                    GeocodeRequest req = new GeocodeRequest(mGeoAutocomplete.getText().toString());
+                    req.setSearchArea(map.getBoundingBox());
+                    req.execute(m_listener);
+                }
+            }
+        });
     }
 
     /**
@@ -123,49 +236,38 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     }
                 }
                 // all permissions were granted
-                initialize();
+                //initialize();
                 break;
             }
             default:
                 super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+                break;
         }
     }
 
-    public void initialize(){
-        // Search for the map fragment to finish setup by calling init().
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.mapfragment);
-
-        // Set up disk cache path for the map service for this application
-        //boolean success = com.here.android.mpa.common.MapSettings.setIsolatedDiskCacheRootPath("{YOUR_CACHE_LOCATION}", "{MapHomePage}");
-
-//        if (!success) {
-//            Toast.makeText(getApplicationContext(), "Unable to set isolated disk cache path.", Toast.LENGTH_LONG);
-//        } else {
-
-        mapFragment.init(new OnEngineInitListener() {
-
-            @Override
-            public void onEngineInitializationCompleted(Error error) {
-                if (error == Error.NONE) {
-                    map = mapFragment.getMap();
-                    map.setProjectionMode(Map.Projection.GLOBE);
-                    map.getPositionIndicator().setVisible(true);
-                    positionManager = PositioningManager.getInstance();
-                    positionManager.addListener(new WeakReference<>(positionListener));
-                    positionManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
-                    //TODO: currentLocation = PositioningManager.getInstance().getPosition().getCoordinate();
-                    map.setCenter(positionManager.getPosition().getCoordinate(),Map.Animation.BOW);
-                    System.out.println("map.setCentre= "+map.getCenter());
-                    // Set the zoom level to the average between min and max
-                    map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
-
-                }else {
-                    System.out.println("ERROR: Cannot initialize Map Fragment");
-                }
+    /**
+     * Add marker on map.
+     *
+     * @param geoCoordinate GeoCoordinate for marker to be added.
+     */
+    private void addMarker(GeoCoordinate geoCoordinate) {
+        if (mMarker == null) {
+            Image image = new Image();
+            try {
+                image.setImageResource(R.drawable.pin);
+            } catch (final IOException e) {
+                e.printStackTrace();
             }
-        });
-
+            mMarker = new MapMarker(geoCoordinate, image);
+            mMarker.setAnchorPoint(new PointF(image.getWidth() / 2, image.getHeight()));
+            map.addMapObject(mMarker);
+        } else {
+            mMarker.setCoordinate(geoCoordinate);
+        }
+        map.setCenter(geoCoordinate, Map.Animation.BOW);
     }
+
 
     private void initGetLocationButton(){
         m_GetLocationButton =(ImageButton)findViewById(R.id.getLocationButton);
@@ -238,6 +340,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             }
         });
     }
+
 
     @Override
     public void onPositionUpdated(PositioningManager.LocationMethod locationMethod, GeoPosition geoPosition, boolean b) {

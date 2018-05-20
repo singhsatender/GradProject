@@ -20,14 +20,16 @@
 
         <activity android:name=".ProfileManager"></activity>
         <activity android:name=".Signup">
+
+        </activity>
+
+        <activity android:name=".MapHomePage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".MapHomePage"></activity>
 
         <meta-data
             android:name="com.here.android.maps.appid"

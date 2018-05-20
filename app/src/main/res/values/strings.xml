@@ -10,4 +10,5 @@
     <string name="Flow">FLOW</string>
     <string name="Incident">INCIDENT</string>
     <string name="Coverage">COVERAGE</string>
+    <string name="search_add">Search Address here !!! </string>
 </resources>
