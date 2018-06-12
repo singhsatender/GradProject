@@ -14,9 +14,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
+
+import com.here.android.mpa.common.GeoBoundingBox;
 import com.here.android.mpa.common.GeoCoordinate;
 import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
@@ -26,6 +29,14 @@ import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
+import com.here.android.mpa.mapping.MapRoute;
+import com.here.android.mpa.routing.CoreRouter;
+import com.here.android.mpa.routing.RouteOptions;
+import com.here.android.mpa.routing.RoutePlan;
+import com.here.android.mpa.routing.RouteResult;
+import com.here.android.mpa.routing.RouteWaypoint;
+import com.here.android.mpa.routing.Router;
+import com.here.android.mpa.routing.RoutingError;
 import com.here.android.mpa.search.ErrorCode;
 import com.here.android.mpa.search.GeocodeRequest;
 import com.here.android.mpa.search.Location;
@@ -56,6 +67,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private SettingsPanel m_settingsPanel;
     private LinearLayout m_settingsLayout;
     private static final Integer THRESHOLD = 2;
+    private MapRoute m_mapRoute;
+    private Button m_createRouteButton;
 
     private GeoCoordinate currentLocation= null;
 
@@ -69,6 +82,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                       boolean isMapMatched) {
             if (position != null) {
               mGeoAutoCompleteAdapter.setPosition(position);
+
             }
         }
 
@@ -86,6 +100,22 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             if (error == ErrorCode.NONE) {
                 if (data != null && data.size() > 0) {
                     addMarker(data.get(0).getCoordinate());
+                    //create route
+                    if (map != null && m_mapRoute != null) {
+                        map.removeMapObject(m_mapRoute);
+                        m_mapRoute = null;
+                    } else {
+                    /*
+                     * The route calculation requires local map data.Unless there is pre-downloaded
+                     * map data on device by utilizing MapLoader APIs, it's not recommended to
+                     * trigger the route calculation immediately after the MapEngine is
+                     * initialized.The INSUFFICIENT_MAP_DATA error code may be returned by
+                     * CoreRouter in this case.
+                     *
+                     */
+                        createRoute(data.get(0).getCoordinate());
+                    }
+
                 }
             }
         }
@@ -113,7 +143,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         //settings panel
         initSettingsPanel();
-
 
     }
 
@@ -372,5 +401,86 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             positionManager.removeListener(positionListener);
             positionManager.stop();
         }
+    }
+
+    /* Creates a route from 4350 Still Creek Dr to Langley BC with highways disallowed */
+    private void createRoute(GeoCoordinate finalPosition) {
+        /* Initialize a CoreRouter */
+        CoreRouter coreRouter = new CoreRouter();
+
+        /* Initialize a RoutePlan */
+        RoutePlan routePlan = new RoutePlan();
+
+        /*
+         * Initialize a RouteOption.HERE SDK allow users to define their own parameters for the
+         * route calculation,including transport modes,route types and route restrictions etc.Please
+         * refer to API doc for full list of APIs
+         */
+        RouteOptions routeOptions = new RouteOptions();
+        /* Other transport modes are also available e.g Pedestrian */
+       // routeOptions.setTransportMode(RouteOptions.TransportMode.CAR);
+        /* Disable highway in this route. */
+        //routeOptions.setHighwaysAllowed(false);
+        /* Calculate the shortest route available. */
+        routeOptions.setRouteType(RouteOptions.Type.SHORTEST);
+        /* Calculate 1 route. */
+        routeOptions.setRouteCount(1);
+        /* Finally set the route option */
+        routePlan.setRouteOptions(routeOptions);
+
+        /* Define waypoints for the route */
+        /* START: 4350 Still Creek Dr */
+        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.415355, -75.670802));
+        /* END: Langley BC */
+        RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(),finalPosition.getLongitude()));
+
+        /* Add both waypoints to the route plan */
+        routePlan.addWaypoint(startPoint);
+        routePlan.addWaypoint(destination);
+
+        /* Trigger the route calculation,results will be called back via the listener */
+        coreRouter.calculateRoute(routePlan,
+                new Router.Listener<List<RouteResult>, RoutingError>() {
+                    @Override
+                    public void onProgress(int i) {
+                        /* The calculation progress can be retrieved in this callback. */
+                    }
+
+                    @Override
+                    public void onCalculateRouteFinished(List<RouteResult> routeResults,
+                                                         RoutingError routingError) {
+                        /* Calculation is done.Let's handle the result */
+                        if (routingError == RoutingError.NONE) {
+                            if (routeResults.get(0).getRoute() != null) {
+                                /* Create a MapRoute so that it can be placed on the map */
+                                m_mapRoute = new MapRoute(routeResults.get(0).getRoute());
+
+                                /* Show the maneuver number on top of the route */
+                                m_mapRoute.setManeuverNumberVisible(true);
+
+                                /* Add the MapRoute to the map */
+                                map.addMapObject(m_mapRoute);
+
+
+                                /*
+                                 * We may also want to make sure the map view is orientated properly
+                                 * so the entire route can be easily seen.
+                                 */
+                                GeoBoundingBox gbb = routeResults.get(0).getRoute()
+                                        .getBoundingBox();
+                                map.zoomTo(gbb, Map.Animation.NONE,
+                                        Map.MOVE_PRESERVE_ORIENTATION);
+                            } else {
+                                Toast.makeText(MapHomePage.this,
+                                        "Error:route results returned is not valid",
+                                        Toast.LENGTH_LONG).show();
+                            }
+                        } else {
+                            Toast.makeText(MapHomePage.this,
+                                    "Error:route calculation returned error code: " + routingError,
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
     }
 }
