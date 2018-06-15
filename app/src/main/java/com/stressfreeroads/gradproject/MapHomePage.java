@@ -3,7 +3,10 @@ package com.stressfreeroads.gradproject;
 import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
@@ -31,6 +34,7 @@ import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.CoreRouter;
+import com.here.android.mpa.routing.Route;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
@@ -67,8 +71,12 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private SettingsPanel m_settingsPanel;
     private LinearLayout m_settingsLayout;
     private static final Integer THRESHOLD = 2;
-    private MapRoute m_mapRoute;
-    private Button m_createRouteButton;
+    private Route m_mapRoute;
+    private NavigationManager m_navigationManager;
+    private GeoBoundingBox m_geoBoundingBox;
+    private boolean m_foregroundServiceStarted;
+
+    private Button m_naviControlButton;
 
     private GeoCoordinate currentLocation= null;
 
@@ -102,7 +110,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     addMarker(data.get(0).getCoordinate());
                     //create route
                     if (map != null && m_mapRoute != null) {
-                        map.removeMapObject(m_mapRoute);
+                        //map.removeMapObject(m_mapRoute);
                         m_mapRoute = null;
                     } else {
                     /*
@@ -113,7 +121,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                      * CoreRouter in this case.
                      *
                      */
-                        createRoute(data.get(0).getCoordinate());
+                        initNaviControlButton(data.get(0).getCoordinate());
+                        //createRoute(data.get(0).getCoordinate());
                     }
 
                 }
@@ -144,6 +153,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         //settings panel
         initSettingsPanel();
 
+        //initNaviControlButton();
+
     }
 
     public void initializeMap()
@@ -167,6 +178,12 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     System.out.println("map.setCentre= "+map.getCenter());
                     // Set the zoom level to the average between min and max
                     map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+
+                     /*
+                         * Get the NavigationManager instance.It is responsible for providing voice
+                         * and visual instructions while driving and walking
+                         */
+                    m_navigationManager = NavigationManager.getInstance();
 
                 }else {
                     System.out.println("ERROR: Cannot initialize Map Fragment");
@@ -453,23 +470,28 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                         if (routingError == RoutingError.NONE) {
                             if (routeResults.get(0).getRoute() != null) {
                                 /* Create a MapRoute so that it can be placed on the map */
-                                m_mapRoute = new MapRoute(routeResults.get(0).getRoute());
+                                m_mapRoute = routeResults.get(0).getRoute();
+
+                                /* Create a MapRoute so that it can be placed on the map */
+                                MapRoute mapRoute = new MapRoute(routeResults.get(0).getRoute());
 
                                 /* Show the maneuver number on top of the route */
-                                m_mapRoute.setManeuverNumberVisible(true);
+                                mapRoute.setManeuverNumberVisible(true);
 
                                 /* Add the MapRoute to the map */
-                                map.addMapObject(m_mapRoute);
+                                map.addMapObject(mapRoute);
 
 
                                 /*
                                  * We may also want to make sure the map view is orientated properly
                                  * so the entire route can be easily seen.
                                  */
-                                GeoBoundingBox gbb = routeResults.get(0).getRoute()
+                                GeoBoundingBox m_geoBoundingBox = routeResults.get(0).getRoute()
                                         .getBoundingBox();
-                                map.zoomTo(gbb, Map.Animation.NONE,
+                                map.zoomTo(m_geoBoundingBox, Map.Animation.NONE,
                                         Map.MOVE_PRESERVE_ORIENTATION);
+
+                                startNavigation();
                             } else {
                                 Toast.makeText(MapHomePage.this,
                                         "Error:route results returned is not valid",
@@ -482,5 +504,180 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                         }
                     }
                 });
+    }
+
+    private void initNaviControlButton(final GeoCoordinate coordinate) {
+        //m_naviControlButton = (Button) findViewById(R.id.naviCtrlButton);
+//        m_naviControlButton.setText("Start Navigation");
+//        m_naviControlButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//
+//            public void onClick(View v) {
+                /*
+                 * To start a turn-by-turn navigation, a concrete route object is required.We use
+                 * the same steps from Routing sample app to create a route from 4350 Still Creek Dr
+                 * to Langley BC without going on HWY.
+                 *
+                 * The route calculation requires local map data.Unless there is pre-downloaded map
+                 * data on device by utilizing MapLoader APIs,it's not recommended to trigger the
+                 * route calculation immediately after the MapEngine is initialized.The
+                 * INSUFFICIENT_MAP_DATA error code may be returned by CoreRouter in this case.
+                 *
+                 */
+                if (m_mapRoute == null) {
+                    createRoute(coordinate);
+                } else {
+                    m_navigationManager.stop();
+                    /*
+                     * Restore the map orientation to show entire route on screen
+                     */
+                    map.zoomTo(m_geoBoundingBox, Map.Animation.NONE, 0f);
+                   // m_naviControlButton.setText("Start Navigation");
+                    m_mapRoute = null;
+                }
+//            }
+//        });
+    }
+
+    private void startNavigation() {
+//        m_naviControlButton.setText("Stop Navigation");
+        /* Display the position indicator on map */
+        map.getPositionIndicator().setVisible(true);
+        /* Configure Navigation manager to launch navigation on current map */
+        m_navigationManager.setMap(map);
+
+        /*
+         * Start the turn-by-turn navigation.Please note if the transport mode of the passed-in
+         * route is pedestrian, the NavigationManager automatically triggers the guidance which is
+         * suitable for walking. Simulation and tracking modes can also be launched at this moment
+         * by calling either simulate() or startTracking()
+         */
+
+//        /* Choose navigation modes between real time navigation and simulation */
+//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+//        alertDialogBuilder.setTitle("Navigation");
+//        alertDialogBuilder.setMessage("Choose Mode");
+//        alertDialogBuilder.setNegativeButton("Navigation",new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialoginterface, int i) {
+                m_navigationManager.startNavigation(m_mapRoute);
+                map.setTilt(60);
+                startForegroundService();
+//            };
+//        });
+//        alertDialogBuilder.setPositiveButton("Simulation",new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialoginterface, int i) {
+//                m_navigationManager.simulate(m_mapRoute,60);//Simualtion speed is set to 60 m/s
+//                map.setTilt(60);
+//                startForegroundService();
+//            };
+//        });
+//        AlertDialog alertDialog = alertDialogBuilder.create();
+//        alertDialog.show();
+        /*
+         * Set the map update mode to ROADVIEW.This will enable the automatic map movement based on
+         * the current location.If user gestures are expected during the navigation, it's
+         * recommended to set the map update mode to NONE first. Other supported update mode can be
+         * found in HERE Android SDK API doc
+         */
+        m_navigationManager.setMapUpdateMode(NavigationManager.MapUpdateMode.ROADVIEW);
+
+        /*
+         * NavigationManager contains a number of listeners which we can use to monitor the
+         * navigation status and getting relevant instructions.In this example, we will add 2
+         * listeners for demo purpose,please refer to HERE Android SDK API documentation for details
+         */
+        addNavigationListeners();
+    }
+
+    /*
+     * Android 8.0 (API level 26) limits how frequently background apps can retrieve the user's
+     * current location. Apps can receive location updates only a few times each hour.
+     * See href="https://developer.android.com/about/versions/oreo/background-location-limits.html
+     * In order to retrieve location updates more frequently start a foreground service.
+     * See https://developer.android.com/guide/components/services.html#Foreground
+     */
+    private void startForegroundService() {
+        if (!m_foregroundServiceStarted) {
+            m_foregroundServiceStarted = true;
+            Intent startIntent = new Intent(this, ForegroundService.class);
+            startIntent.setAction(ForegroundService.START_ACTION);
+            this.getApplicationContext().startService(startIntent);
+        }
+    }
+
+    private void stopForegroundService() {
+        if (m_foregroundServiceStarted) {
+            m_foregroundServiceStarted = false;
+            Intent stopIntent = new Intent(this, ForegroundService.class);
+            stopIntent.setAction(ForegroundService.STOP_ACTION);
+            this.getApplicationContext().startService(stopIntent);
+        }
+    }
+
+    private void addNavigationListeners() {
+
+        /*
+         * Register a NavigationManagerEventListener to monitor the status change on
+         * NavigationManager
+         */
+        m_navigationManager.addNavigationManagerEventListener(
+                new WeakReference<NavigationManager.NavigationManagerEventListener>(
+                        m_navigationManagerEventListener));
+
+        /* Register a PositionListener to monitor the position updates */
+        m_navigationManager.addPositionListener(
+                new WeakReference<NavigationManager.PositionListener>(m_positionListener));
+    }
+
+    private NavigationManager.PositionListener m_positionListener = new NavigationManager.PositionListener() {
+        @Override
+        public void onPositionUpdated(GeoPosition geoPosition) {
+            /* Current position information can be retrieved in this callback */
+        }
+    };
+
+    private NavigationManager.NavigationManagerEventListener m_navigationManagerEventListener = new NavigationManager.NavigationManagerEventListener() {
+        @Override
+        public void onRunningStateChanged() {
+            Toast.makeText(MapHomePage.this, "Running state changed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onNavigationModeChanged() {
+            Toast.makeText(MapHomePage.this, "Navigation mode changed", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onEnded(NavigationManager.NavigationMode navigationMode) {
+            Toast.makeText(MapHomePage.this, navigationMode + " was ended", Toast.LENGTH_SHORT).show();
+            stopForegroundService();
+        }
+
+        @Override
+        public void onMapUpdateModeChanged(NavigationManager.MapUpdateMode mapUpdateMode) {
+            Toast.makeText(MapHomePage.this, "Map update mode is changed to " + mapUpdateMode,
+                    Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onRouteUpdated(Route route) {
+            Toast.makeText(MapHomePage.this, "Route updated", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onCountryInfo(String s, String s1) {
+            Toast.makeText(MapHomePage.this, "Country info updated from " + s + " to " + s1,
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    @Override
+    public void onDestroy() {
+        /* Stop the navigation when app is destroyed */
+        super.onDestroy();
+        if (m_navigationManager != null) {
+            stopForegroundService();
+            m_navigationManager.stop();
+        }
     }
 }
