@@ -34,6 +34,7 @@ import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.routing.CoreRouter;
+import com.here.android.mpa.routing.Maneuver;
 import com.here.android.mpa.routing.Route;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
@@ -546,7 +547,14 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /* Configure Navigation manager to launch navigation on current map */
         m_navigationManager.setMap(map);
 
-        /*
+        // set guidance view to position with road ahead, tilt and zoomlevel was setup before manually
+        // choose other update modes for different position and zoom behavior
+        NavigationManager.getInstance().setMapUpdateMode(NavigationManager.MapUpdateMode.POSITION_ANIMATION);
+
+        // get new guidance instructions
+        m_navigationManager.addNewInstructionEventListener(new WeakReference<>(instructionHandler));
+
+              /*
          * Start the turn-by-turn navigation.Please note if the transport mode of the passed-in
          * route is pedestrian, the NavigationManager automatically triggers the guidance which is
          * suitable for walking. Simulation and tracking modes can also be launched at this moment
@@ -633,6 +641,23 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         @Override
         public void onPositionUpdated(GeoPosition geoPosition) {
             /* Current position information can be retrieved in this callback */
+        }
+    };
+
+    // listen for new instruction events
+    private NavigationManager.NewInstructionEventListener instructionHandler = new NavigationManager.NewInstructionEventListener() {
+        @Override
+        public void onNewInstructionEvent() {
+            Maneuver maneuver = m_navigationManager.getNextManeuver();
+            if (maneuver != null) {
+                if (maneuver.getAction() == Maneuver.Action.END) {
+                    //notify the user that the route is complete
+                    Toast.makeText(MapHomePage.this,
+                            "Destination reached ",
+                            Toast.LENGTH_LONG).show();
+                }
+                super.onNewInstructionEvent();
+            }
         }
     };
 
