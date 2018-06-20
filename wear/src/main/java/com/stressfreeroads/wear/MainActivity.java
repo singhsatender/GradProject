@@ -44,29 +44,15 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
 //            public void onLayoutInflated(WatchViewStub stub) {
 
                 // as soon as layout is there...
-                mTextView = (TextView) findViewById(R.id.ppg);
-
-                // bind to our service.
-                bindService(new Intent(MainActivity.this, PPGService.class), new ServiceConnection() {
-                    @Override
-                    public void onServiceConnected(ComponentName componentName, IBinder binder) {
-                        Log.d(LOG_TAG, "connected to service.");
-                        // set our change listener to get change events
-                        ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
-                    }
-
-                    @Override
-                    public void onServiceDisconnected(ComponentName componentName) {
-
-                    }
-                }, Service.BIND_AUTO_CREATE);
-
-//
+                mTextView = (TextView) findViewById(R.id.ppg);//
 //            }
 //        });
         mstart = (Button)findViewById(R.id.start);
         mstart.setOnClickListener(new View.OnClickListener() {
+
             public void onClick(View v) {
+                // bind to our service.
+                bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
                 fileManager();
 
             }
@@ -77,6 +63,7 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 try {
+                    unbindService(mServiceConnection);
                    // outputStream.close();
                     writer.close();
                 } catch (Exception e) {
@@ -88,6 +75,20 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
 
 
     }
+
+    private final ServiceConnection mServiceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder binder) {
+            Log.d(LOG_TAG, "connected to service.");
+            // set our change listener to get change events
+            ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+
+        }
+    };
 
     protected  void fileManager(){
         // Code here executes on main thread after user presses button
