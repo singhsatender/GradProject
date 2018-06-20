@@ -447,7 +447,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         routePlan.setRouteOptions(routeOptions);
 
         /* Define waypoints for the route */
-        /* START: 4350 Still Creek Dr */
+        /* START: Current Location */
         RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.415355, -75.670802));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(),finalPosition.getLongitude()));
