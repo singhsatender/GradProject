@@ -69,6 +69,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private final static int REQUEST_CODE_ASK_PERMISSIONS = 1;
     private ImageButton m_GetLocationButton;
     private ImageButton m_settingsBtn;
+    private Button m_startNavigation;
     private SettingsPanel m_settingsPanel;
     private LinearLayout m_settingsLayout;
     private static final Integer THRESHOLD = 2;
@@ -76,6 +77,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private NavigationManager m_navigationManager;
     private GeoBoundingBox m_geoBoundingBox;
     private boolean m_foregroundServiceStarted;
+    private GeoCoordinate destination = null;
+    private Boolean isNavigationPossible = false;
 
     private Button m_naviControlButton;
 
@@ -122,7 +125,11 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                      * CoreRouter in this case.
                      *
                      */
+                        //destination=data.get(0).getCoordinate();
+                        m_startNavigation.setVisibility(View.VISIBLE);
                         initNaviControlButton(data.get(0).getCoordinate());
+                        System.out.println("Start navigationnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" +
+                                "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
                         //createRoute(data.get(0).getCoordinate());
                     }
 
@@ -155,6 +162,23 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         initSettingsPanel();
 
         //initNaviControlButton();
+
+        m_startNavigation = (Button)findViewById(R.id.startNavigation);
+        m_startNavigation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isNavigationPossible) {
+                    isNavigationPossible = false;
+                    startNavigation();
+                }else{
+                    Toast.makeText(MapHomePage.this,
+                            "Error:route not ready yet.",
+                            Toast.LENGTH_LONG).show();
+                }
+                }
+        });
+       // m_startNavigation.setVisibility(View.INVISIBLE);
+
 
     }
 
@@ -492,7 +516,9 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                 map.zoomTo(m_geoBoundingBox, Map.Animation.NONE,
                                         Map.MOVE_PRESERVE_ORIENTATION);
 
-                                startNavigation();
+                                isNavigationPossible = true;
+
+                                //startNavigation();
                             } else {
                                 Toast.makeText(MapHomePage.this,
                                         "Error:route results returned is not valid",

@@ -135,4 +135,17 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
 
     />
 
+    <Button
+        android:id="@+id/startNavigation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="bottom"
+        android:layout_marginLeft="120dp"
+        android:layout_marginBottom="40dp"
+        android:text="Start Navigation"
+
+        />
+
 </RelativeLayout>
