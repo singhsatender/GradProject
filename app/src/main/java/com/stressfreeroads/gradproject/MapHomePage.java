@@ -14,6 +14,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -29,11 +30,13 @@ import com.here.android.mpa.common.GeoPosition;
 import com.here.android.mpa.common.Image;
 import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
+import com.here.android.mpa.common.RoadElement;
 import com.here.android.mpa.guidance.NavigationManager;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
+import com.here.android.mpa.mapping.MapTrafficLayer;
 import com.here.android.mpa.routing.CoreRouter;
 import com.here.android.mpa.routing.Maneuver;
 import com.here.android.mpa.routing.Route;
@@ -50,7 +53,10 @@ import com.here.android.mpa.search.ResultListener;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class MapHomePage extends AppCompatActivity implements PositioningManager.OnPositionChangedListener {
@@ -584,7 +590,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     }
 
     private void startNavigation() {
-//        m_naviControlButton.setText("Stop Navigation");
+
         /* Display the position indicator on map */
         map.getPositionIndicator().setVisible(true);
         /* Configure Navigation manager to launch navigation on current map */
@@ -597,33 +603,10 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         // get new guidance instructions
         m_navigationManager.addNewInstructionEventListener(new WeakReference<>(instructionHandler));
 
-              /*
-         * Start the turn-by-turn navigation.Please note if the transport mode of the passed-in
-         * route is pedestrian, the NavigationManager automatically triggers the guidance which is
-         * suitable for walking. Simulation and tracking modes can also be launched at this moment
-         * by calling either simulate() or startTracking()
-         */
 
-//        /* Choose navigation modes between real time navigation and simulation */
-//        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-//        alertDialogBuilder.setTitle("Navigation");
-//        alertDialogBuilder.setMessage("Choose Mode");
-//        alertDialogBuilder.setNegativeButton("Navigation",new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialoginterface, int i) {
                 m_navigationManager.startNavigation(m_mapRoute);
                 map.setTilt(60);
                 startForegroundService();
-//            };
-//        });
-//        alertDialogBuilder.setPositiveButton("Simulation",new DialogInterface.OnClickListener() {
-//            public void onClick(DialogInterface dialoginterface, int i) {
-//                m_navigationManager.simulate(m_mapRoute,60);//Simualtion speed is set to 60 m/s
-//                map.setTilt(60);
-//                startForegroundService();
-//            };
-//        });
-//        AlertDialog alertDialog = alertDialogBuilder.create();
-//        alertDialog.show();
         /*
          * Set the map update mode to ROADVIEW.This will enable the automatic map movement based on
          * the current location.If user gestures are expected during the navigation, it's
@@ -678,6 +661,10 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /* Register a PositionListener to monitor the position updates */
         m_navigationManager.addPositionListener(
                 new WeakReference<NavigationManager.PositionListener>(m_positionListener));
+
+        /*Register new Maneuver Listener to get the current information about the maneuver*/
+        m_navigationManager.addManeuverEventListener(
+                new WeakReference<NavigationManager.ManeuverEventListener>(m_maneuverListener));
     }
 
     private NavigationManager.PositionListener m_positionListener = new NavigationManager.PositionListener() {
@@ -702,6 +689,19 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                 super.onNewInstructionEvent();
             }
         }
+    };
+
+    private NavigationManager.ManeuverEventListener m_maneuverListener = new NavigationManager.ManeuverEventListener (){
+        @Override
+        public void onManeuverEvent() {
+            RoadElement roadElement  =  PositioningManager.getInstance().getRoadElement();
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            Toast.makeText(MapHomePage.this,
+                    "RoadName: "+roadElement.getRoadName()+", NumberOfLanes: "+roadElement.getNumberOfLanes()+", Speed Limit: "+roadElement.getSpeedLimit()+", Timestamp: "+timestamp,
+                    Toast.LENGTH_LONG);
+        }
+
+
     };
 
     private NavigationManager.NavigationManagerEventListener m_navigationManagerEventListener = new NavigationManager.NavigationManagerEventListener() {
