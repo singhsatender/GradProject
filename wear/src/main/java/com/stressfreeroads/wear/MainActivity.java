@@ -59,7 +59,7 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
         });
 
         mstop  = (Button) findViewById(R.id.stop);
-        mstart.setOnClickListener(new View.OnClickListener() {
+        mstop.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
                 try {
@@ -127,7 +127,7 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
         String timestampedVal = newValue+" : "+timestamp+", ";
         Log.d(LOG_TAG,"sending new value to listener: " + timestampedVal);
         try {
-            writer.write(timestampedVal);
+            writer.write(timestampedVal+"\n");
             //outputStream.write(timestampedVal.getBytes()); //revert back using Arrays.tostring(bytes)
         } catch (Exception e) {
             e.printStackTrace();

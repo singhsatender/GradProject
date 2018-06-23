@@ -145,6 +145,8 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
         android:layout_marginLeft="120dp"
         android:layout_marginBottom="40dp"
         android:text="Start Navigation"
+        android:background="#008000"
+        android:textColor="#FFF"
 
         />
 

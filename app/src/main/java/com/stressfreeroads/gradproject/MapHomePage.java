@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -80,7 +81,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private GeoCoordinate destination = null;
     private Boolean isNavigationPossible = false;
 
-    private Button m_naviControlButton;
+    private MapRoute mapRoute=null;
 
     private GeoCoordinate currentLocation= null;
 
@@ -128,8 +129,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                         //destination=data.get(0).getCoordinate();
                         m_startNavigation.setVisibility(View.VISIBLE);
                         initNaviControlButton(data.get(0).getCoordinate());
-                        System.out.println("Start navigationnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn" +
-                                "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn");
+                        System.out.println("Start navigation");
                         //createRoute(data.get(0).getCoordinate());
                     }
 
@@ -167,13 +167,30 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         m_startNavigation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(isNavigationPossible) {
-                    isNavigationPossible = false;
-                    startNavigation();
-                }else{
-                    Toast.makeText(MapHomePage.this,
-                            "Error:route not ready yet.",
-                            Toast.LENGTH_LONG).show();
+                if (m_startNavigation.getText().equals("Start Navigation")) {
+                    if (isNavigationPossible) {
+                        isNavigationPossible = false;
+                        startNavigation();
+                        m_startNavigation.setText("Stop Navigation");
+                        m_startNavigation.setBackgroundColor(Color.RED);
+                    } else {
+                        Toast.makeText(MapHomePage.this,
+                                "Error:route not ready yet.",
+                                Toast.LENGTH_LONG).show();
+                    }
+                } else{
+                    m_navigationManager.stop();
+                    stopForegroundService();
+                    map.removeMapObject(mMarker);
+                    mMarker=null;
+                    mGeoAutocomplete.setText("");
+                    m_startNavigation.setText("Start Navigation");
+                    m_startNavigation.setBackgroundColor(Color.GREEN);
+                    isNavigationPossible=false;
+                    map.removeMapObject(mapRoute);
+                    mapRoute=null;
+                    m_mapRoute=null;
+                    map.setCenter(PositioningManager.getInstance().getPosition().getCoordinate(),Map.Animation.BOW);
                 }
                 }
         });
@@ -472,7 +489,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         /* Define waypoints for the route */
         /* START: Current Location */
-        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.415355, -75.670802));
+        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(),PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(),finalPosition.getLongitude()));
 
@@ -498,7 +515,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                 m_mapRoute = routeResults.get(0).getRoute();
 
                                 /* Create a MapRoute so that it can be placed on the map */
-                                MapRoute mapRoute = new MapRoute(routeResults.get(0).getRoute());
+                                 mapRoute = new MapRoute(routeResults.get(0).getRoute());
 
                                 /* Show the maneuver number on top of the route */
                                 mapRoute.setManeuverNumberVisible(true);

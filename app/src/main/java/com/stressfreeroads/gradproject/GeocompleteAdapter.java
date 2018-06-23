@@ -134,7 +134,7 @@ public class GeocompleteAdapter extends BaseAdapter implements Filterable {
                 .buildUpon()
                 .appendQueryParameter("app_id", appId)
                 .appendQueryParameter("app_code", appToken)
-                .appendQueryParameter("prox", ""+currentLocation+",5000")
+                .appendQueryParameter("country", "CAN")
                 .appendQueryParameter("maxresults", String.valueOf(MAX_NUM))
                 .appendQueryParameter("query", query_text);
 
