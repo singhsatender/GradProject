@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.here.android.mpa.common.GeoBoundingBox;
@@ -43,6 +44,7 @@ import com.here.android.mpa.routing.Route;
 import com.here.android.mpa.routing.RouteOptions;
 import com.here.android.mpa.routing.RoutePlan;
 import com.here.android.mpa.routing.RouteResult;
+import com.here.android.mpa.routing.RouteTta;
 import com.here.android.mpa.routing.RouteWaypoint;
 import com.here.android.mpa.routing.Router;
 import com.here.android.mpa.routing.RoutingError;
@@ -86,6 +88,15 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private boolean m_foregroundServiceStarted;
     private GeoCoordinate destination = null;
     private Boolean isNavigationPossible = false;
+    private TextView dist_time_text;
+    private Date current;
+    private Date dateval;
+    private long dateDiffBetman;
+    private long datestored;
+    private long timeleft;
+    private long hours;
+    private long min;
+    private RouteTta rrta;
 
     private MapRoute mapRoute=null;
 
@@ -196,6 +207,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     map.removeMapObject(mapRoute);
                     mapRoute=null;
                     m_mapRoute=null;
+                    dist_time_text.setVisibility(View.GONE);
                     map.setCenter(PositioningManager.getInstance().getPosition().getCoordinate(),Map.Animation.BOW);
                 }
                 }
@@ -496,6 +508,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /* Define waypoints for the route */
         /* START: Current Location */
         RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(),PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
+       // RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(),finalPosition.getLongitude()));
 
@@ -540,6 +553,18 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                         Map.MOVE_PRESERVE_ORIENTATION);
 
                                 isNavigationPossible = true;
+
+                                Route route=mapRoute.getRoute();
+
+                                //show distance in meters
+                                float dist= route.getLength();
+                                //for Tta(Time to arrival
+                                RouteTta rrta=route.getTta(Route.TrafficPenaltyMode.OPTIMAL,Route.WHOLE_ROUTE);
+                                int getTimesec=rrta.getDuration();
+
+                                //Toast.makeText(m_activity.getApplicationContext(),"Distance is:"+rrta.getDuration(),Toast.LENGTH_SHORT).show();
+                                List<GeoCoordinate> allCordinates= route.getRouteGeometry();
+                                AddTextBox(allCordinates.get(allCordinates.size()/2),dist,getTimesec);
 
                                 //startNavigation();
                             } else {
@@ -686,6 +711,37 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                             "Destination reached ",
                             Toast.LENGTH_LONG).show();
                 }
+                float distanceleft=mapRoute.getRoute().getLength()-maneuver.getDistanceFromStart()+maneuver.getDistanceFromPreviousManeuver();
+                distanceleft=Math.round(distanceleft/10);
+                distanceleft/=100;
+
+                //cal time remaining
+                current=new Date();
+                dateval=maneuver.getStartTime();
+                dateDiffBetman= dateval.getTime()-current.getTime();//in millisec
+                datestored+= dateDiffBetman/1000;
+                current=dateval;
+
+                rrta=mapRoute.getRoute().getTta(Route.TrafficPenaltyMode.OPTIMAL,Route.WHOLE_ROUTE);
+                int getTimesec=rrta.getDuration();
+                timeleft=getTimesec-datestored;
+                hours=timeleft/3600;
+                min=(timeleft-hours*3600)/60;
+                String Time="";
+
+                if(hours==0)
+                    Time=min+" mins ";
+                else if(min==0)
+                    Time=timeleft+" secs";
+                else
+                    Time=hours+" hrs "+min+" mins";
+
+
+                dist_time_text.setText("dist-Left:"+distanceleft+" km\nEstimated Time:"+Time);
+
+                if(dist_time_text.getVisibility()==View.GONE)
+                    dist_time_text.setVisibility(View.VISIBLE);
+
                 super.onNewInstructionEvent();
             }
         }
@@ -695,6 +751,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         @Override
         public void onManeuverEvent() {
             RoadElement roadElement  =  PositioningManager.getInstance().getRoadElement();
+
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             Toast.makeText(MapHomePage.this,
                     "RoadName: "+roadElement.getRoadName()+", NumberOfLanes: "+roadElement.getNumberOfLanes()+", Speed Limit: "+roadElement.getSpeedLimit()+", Timestamp: "+timestamp,
@@ -738,6 +795,33 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     Toast.LENGTH_SHORT).show();
         }
     };
+
+    //for TextBox to display Distance
+    private void AddTextBox(GeoCoordinate geo,float dist,int getTimesec){
+
+        dist_time_text=(TextView)findViewById(R.id.distance_time);
+
+
+        //cal dist
+        //dist=dist/1000;//covert in km
+        float distance=Math.round(dist/10);
+        distance/=100;
+        //cal tym
+        int hours=getTimesec/3600;
+        int min=(getTimesec-hours*3600)/60;
+        String Time="";
+
+        if(hours==0)
+            Time=min+" mins";
+        else if(min==0)
+            Time=getTimesec+" secs";
+        else
+            Time=hours+" hrs "+min+" mins";
+
+        dist_time_text.setText("dist: "+distance+" km\n"+"Time:"+Time);
+        dist_time_text.setVisibility(View.VISIBLE);
+
+    }
 
     @Override
     public void onDestroy() {
