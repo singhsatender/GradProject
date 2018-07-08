@@ -21,7 +21,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.Timestamp;
 
-public class MainActivity extends Activity implements  PPGService.OnChangeListener  {
+public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener  {
 
     private TextView mTextView;
     private Button mstart;
@@ -36,6 +36,7 @@ public class MainActivity extends Activity implements  PPGService.OnChangeListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setAmbientEnabled();
 
 //        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
 //        // inflate layout depending on watch type (round or square)
