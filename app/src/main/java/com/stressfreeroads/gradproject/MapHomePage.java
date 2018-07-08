@@ -15,9 +15,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -38,6 +40,7 @@ import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
 import com.here.android.mpa.mapping.MapRoute;
 import com.here.android.mpa.mapping.MapTrafficLayer;
+import com.here.android.mpa.mapping.TrafficEvent;
 import com.here.android.mpa.routing.CoreRouter;
 import com.here.android.mpa.routing.Maneuver;
 import com.here.android.mpa.routing.Route;
@@ -60,6 +63,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class MapHomePage extends AppCompatActivity implements PositioningManager.OnPositionChangedListener {
 
@@ -147,6 +151,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                         m_startNavigation.setVisibility(View.VISIBLE);
                         initNaviControlButton(data.get(0).getCoordinate());
                         System.out.println("Start navigation");
+                        hideKeyboard(MapHomePage.this);
                         //createRoute(data.get(0).getCoordinate());
                     }
 
@@ -193,7 +198,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     } else {
                         Toast.makeText(MapHomePage.this,
                                 "Error:route not ready yet.",
-                                Toast.LENGTH_LONG).show();
+                                Toast.LENGTH_SHORT).show();
                     }
                 } else{
                     m_navigationManager.stop();
@@ -489,17 +494,15 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         RoutePlan routePlan = new RoutePlan();
 
         /*
-         * Initialize a RouteOption.HERE SDK allow users to define their own parameters for the
-         * route calculation,including transport modes,route types and route restrictions etc.Please
-         * refer to API doc for full list of APIs
+         * Initialize a RouteOption.
          */
         RouteOptions routeOptions = new RouteOptions();
-        /* Other transport modes are also available e.g Pedestrian */
-       // routeOptions.setTransportMode(RouteOptions.TransportMode.CAR);
+
         /* Disable highway in this route. */
         //routeOptions.setHighwaysAllowed(false);
-        /* Calculate the shortest route available. */
-        routeOptions.setRouteType(RouteOptions.Type.SHORTEST);
+
+        /* Calculate the fastest route available. */
+        routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         /* Calculate 1 route. */
         routeOptions.setRouteCount(1);
         /* Finally set the route option */
@@ -562,8 +565,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                 RouteTta rrta=route.getTta(Route.TrafficPenaltyMode.OPTIMAL,Route.WHOLE_ROUTE);
                                 int getTimesec=rrta.getDuration();
 
-                                //Toast.makeText(m_activity.getApplicationContext(),"Distance is:"+rrta.getDuration(),Toast.LENGTH_SHORT).show();
-                                List<GeoCoordinate> allCordinates= route.getRouteGeometry();
+                                 List<GeoCoordinate> allCordinates= route.getRouteGeometry();
                                 AddTextBox(allCordinates.get(allCordinates.size()/2),dist,getTimesec);
 
                                 //startNavigation();
@@ -582,12 +584,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     }
 
     private void initNaviControlButton(final GeoCoordinate coordinate) {
-        //m_naviControlButton = (Button) findViewById(R.id.naviCtrlButton);
-//        m_naviControlButton.setText("Start Navigation");
-//        m_naviControlButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//
-//            public void onClick(View v) {
                 /*
                  * To start a turn-by-turn navigation, a concrete route object is required.We use
                  * the same steps from Routing sample app to create a route from 4350 Still Creek Dr
@@ -610,8 +606,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                    // m_naviControlButton.setText("Start Navigation");
                     m_mapRoute = null;
                 }
-//            }
-//        });
     }
 
     private void startNavigation() {
@@ -626,8 +620,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         NavigationManager.getInstance().setMapUpdateMode(NavigationManager.MapUpdateMode.POSITION_ANIMATION);
 
         // get new guidance instructions
-        m_navigationManager.addNewInstructionEventListener(new WeakReference<>(instructionHandler));
-
+        m_navigationManager.addNewInstructionEventListener(new WeakReference<NavigationManager.NewInstructionEventListener>(instructionHandler));
 
                 m_navigationManager.startNavigation(m_mapRoute);
                 map.setTilt(60);
@@ -642,8 +635,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         /*
          * NavigationManager contains a number of listeners which we can use to monitor the
-         * navigation status and getting relevant instructions.In this example, we will add 2
-         * listeners for demo purpose,please refer to HERE Android SDK API documentation for details
+         * navigation status and getting relevant instructions.
          */
         addNavigationListeners();
     }
@@ -651,9 +643,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     /*
      * Android 8.0 (API level 26) limits how frequently background apps can retrieve the user's
      * current location. Apps can receive location updates only a few times each hour.
-     * See href="https://developer.android.com/about/versions/oreo/background-location-limits.html
-     * In order to retrieve location updates more frequently start a foreground service.
-     * See https://developer.android.com/guide/components/services.html#Foreground
      */
     private void startForegroundService() {
         if (!m_foregroundServiceStarted) {
@@ -690,12 +679,45 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /*Register new Maneuver Listener to get the current information about the maneuver*/
         m_navigationManager.addManeuverEventListener(
                 new WeakReference<NavigationManager.ManeuverEventListener>(m_maneuverListener));
+
+        /*set up route recalculation in navigation*/
+        m_navigationManager.addRerouteListener(
+                new WeakReference<NavigationManager.RerouteListener>(m_reRouteListener));
+
+
     }
 
     private NavigationManager.PositionListener m_positionListener = new NavigationManager.PositionListener() {
         @Override
         public void onPositionUpdated(GeoPosition geoPosition) {
             /* Current position information can be retrieved in this callback */
+           if( m_navigationManager.getRunningState().equals(NavigationManager.NavigationState.RUNNING)){
+               Maneuver maneuver = NavigationManager.getInstance().getNextManeuver();
+               if (maneuver != null) {
+//                   double distanceleft=m_mapRoute.getDestination().distanceTo(geoPosition.getCoordinate());
+//                   distanceleft=Math.round(distanceleft/10);
+//                   distanceleft/=100;
+                   float distanceleft=mapRoute.getRoute().getLength()-maneuver.getDistanceFromStart()+maneuver.getDistanceFromPreviousManeuver();
+                   distanceleft=Math.round(distanceleft/10);
+                   distanceleft/=100;
+
+                   String timeRemaining="";
+                   long minutes = TimeUnit.MILLISECONDS.toMinutes(m_navigationManager.getEta(true,Route.TrafficPenaltyMode.OPTIMAL).getTime()-new Date().getTime());
+                   long hourRemaining=minutes/60;
+                   if(hourRemaining==0)
+                       timeRemaining=minutes+" mins ";
+                   else if(minutes==0)
+                       timeRemaining=timeleft+" secs";
+                   else
+                       timeRemaining=hours+" hrs "+minutes+" mins";
+                   dist_time_text.setText("dist-Left:"+ distanceleft +" km\nEstimated Time:"+ timeRemaining);
+
+                   if(dist_time_text.getVisibility()==View.GONE)
+                       dist_time_text.setVisibility(View.VISIBLE);
+
+               }
+           }
+
         }
     };
 
@@ -711,37 +733,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                             "Destination reached ",
                             Toast.LENGTH_LONG).show();
                 }
-                float distanceleft=mapRoute.getRoute().getLength()-maneuver.getDistanceFromStart()+maneuver.getDistanceFromPreviousManeuver();
-                distanceleft=Math.round(distanceleft/10);
-                distanceleft/=100;
-
-                //cal time remaining
-                current=new Date();
-                dateval=maneuver.getStartTime();
-                dateDiffBetman= dateval.getTime()-current.getTime();//in millisec
-                datestored+= dateDiffBetman/1000;
-                current=dateval;
-
-                rrta=mapRoute.getRoute().getTta(Route.TrafficPenaltyMode.OPTIMAL,Route.WHOLE_ROUTE);
-                int getTimesec=rrta.getDuration();
-                timeleft=getTimesec-datestored;
-                hours=timeleft/3600;
-                min=(timeleft-hours*3600)/60;
-                String Time="";
-
-                if(hours==0)
-                    Time=min+" mins ";
-                else if(min==0)
-                    Time=timeleft+" secs";
-                else
-                    Time=hours+" hrs "+min+" mins";
-
-
-                dist_time_text.setText("dist-Left:"+distanceleft+" km\nEstimated Time:"+Time);
-
-                if(dist_time_text.getVisibility()==View.GONE)
-                    dist_time_text.setVisibility(View.VISIBLE);
-
                 super.onNewInstructionEvent();
             }
         }
@@ -762,14 +753,26 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     };
 
     private NavigationManager.NavigationManagerEventListener m_navigationManagerEventListener = new NavigationManager.NavigationManagerEventListener() {
+
         @Override
         public void onRunningStateChanged() {
-            Toast.makeText(MapHomePage.this, "Running state changed", Toast.LENGTH_SHORT).show();
+
+        }
+
+        @Override
+        public void onRouteUpdated(final Route updatedRoute) {
+            // This does not happen on re-route
+            Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
+                    .show();
+
+//            m_map.removeMapObject(m_liveSightMapRoute);
+//            m_liveSightMapRoute = new MapRoute(updatedRoute);
+//            showLiveSightRoute();
         }
 
         @Override
         public void onNavigationModeChanged() {
-            Toast.makeText(MapHomePage.this, "Navigation mode changed", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MapHomePage.this, "Navigation mode changed", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -780,22 +783,31 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         @Override
         public void onMapUpdateModeChanged(NavigationManager.MapUpdateMode mapUpdateMode) {
-            Toast.makeText(MapHomePage.this, "Map update mode is changed to " + mapUpdateMode,
-                    Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onRouteUpdated(Route route) {
-            Toast.makeText(MapHomePage.this, "Route updated", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(MapHomePage.this, "Map update mode is changed to " + mapUpdateMode,
+                   // Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onCountryInfo(String s, String s1) {
-            Toast.makeText(MapHomePage.this, "Country info updated from " + s + " to " + s1,
-                    Toast.LENGTH_SHORT).show();
+//            Toast.makeText(MapHomePage.this, "Country info updated from " + s + " to " + s1,
+//                    Toast.LENGTH_SHORT).show();
         }
     };
 
+    //Route recalculation
+    private NavigationManager.RerouteListener m_reRouteListener = new NavigationManager.RerouteListener() {
+        @Override
+        public void onRerouteBegin() {
+            super.onRerouteBegin();
+            Toast.makeText(getApplicationContext(), "reroute begin", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onRerouteEnd(Route route){
+            super.onRerouteEnd(route);
+            Toast.makeText(getApplicationContext(), "reroute end", Toast.LENGTH_SHORT).show();
+        }
+    };
     //for TextBox to display Distance
     private void AddTextBox(GeoCoordinate geo,float dist,int getTimesec){
 
@@ -821,6 +833,17 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         dist_time_text.setText("dist: "+distance+" km\n"+"Time:"+Time);
         dist_time_text.setVisibility(View.VISIBLE);
 
+    }
+
+    public static void hideKeyboard(Activity activity) {
+        InputMethodManager imm = (InputMethodManager) activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
+        //Find the currently focused view, so we can grab the correct window token from it.
+        View view = activity.getCurrentFocus();
+        //If no view currently has focus, create a new one, just so we can grab a window token from it
+        if (view == null) {
+            view = new View(activity);
+        }
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
     }
 
     @Override
