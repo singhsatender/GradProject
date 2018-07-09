@@ -56,6 +56,9 @@ import com.here.android.mpa.search.GeocodeRequest;
 import com.here.android.mpa.search.Location;
 import com.here.android.mpa.search.ResultListener;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.sql.Timestamp;
@@ -107,6 +110,11 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private GeoCoordinate currentLocation= null;
 
     private MapMarker m_positionIndicatorFixed = null;
+
+    //file mangemtn-start
+    BufferedWriter writer;
+    Long x;
+    //file management- end
 
     // Position Listener
     PositioningManager.OnPositionChangedListener positionListener = new PositioningManager.OnPositionChangedListener() {
@@ -183,7 +191,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         //settings panel
         initSettingsPanel();
 
-        //initNaviControlButton();
+        //Initiate file to save trip details
+        fileManager();
 
         m_startNavigation = (Button)findViewById(R.id.startNavigation);
         m_startNavigation.setOnClickListener(new View.OnClickListener() {
@@ -744,9 +753,14 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             RoadElement roadElement  =  PositioningManager.getInstance().getRoadElement();
 
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            Toast.makeText(MapHomePage.this,
-                    "RoadName: "+roadElement.getRoadName()+", NumberOfLanes: "+roadElement.getNumberOfLanes()+", Speed Limit: "+roadElement.getSpeedLimit()+", Timestamp: "+timestamp,
-                    Toast.LENGTH_LONG);
+            String data = "RoadName: "+roadElement.getRoadName()+", NumberOfLanes: "+roadElement.getNumberOfLanes()
+                    +", Speed Limit: "+roadElement.getSpeedLimit()+", Timestamp: "+timestamp;
+            try {
+                writer.write(data+"\n");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
 
@@ -854,5 +868,28 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             stopForegroundService();
             m_navigationManager.stop();
         }
+        try {
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /*File Management
+    * TODO:Refactor it to new file*/
+    protected  void fileManager(){
+        try {
+            // Creates a file in the primary external storage space of the current application.
+            // If the file does not exists, it is created.
+            File tripDetailFile = new File(this.getExternalFilesDir(null), "TripData.txt");
+            if (!tripDetailFile.exists())
+                tripDetailFile.createNewFile();
+
+            // Adds a line to the file
+            writer = new BufferedWriter(new FileWriter(tripDetailFile, true /*append*/));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
