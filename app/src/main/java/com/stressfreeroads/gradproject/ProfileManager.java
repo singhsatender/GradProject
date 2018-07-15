@@ -52,6 +52,17 @@ public class ProfileManager extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_manager);
 
+        if(SaveSharedPreference.getUserName(ProfileManager.this).length() == 0)
+        {
+            // call Login Activity
+        }
+        else
+        {
+            //Redirect to Maps Hompeage
+            Intent i = new Intent(getApplicationContext(), MapHomePage.class);
+            startActivity(i);
+        }
+
         questionNum = (TextView) findViewById(R.id.question_num);
         questionText = (TextView) findViewById(R.id.question_text);
         ansBtn1 = (RadioButton) findViewById(R.id.ansBtn1);

@@ -19,8 +19,8 @@ public class SettingsPanel {
     // Initialize UI elements
     private RadioGroup m_mapModeGroup;
 
-    private Switch m_flowSwitch;
-    private Switch m_incidentSwitch;
+//    private Switch m_flowSwitch;
+//    private Switch m_incidentSwitch;
 
     private Activity m_activity;
     private Map m_map;
@@ -33,8 +33,8 @@ public class SettingsPanel {
 
     private void initUIElements() {
         m_mapModeGroup = (RadioGroup) m_activity.findViewById(R.id.mapModeRadioGroup);
-        m_flowSwitch = (Switch) m_activity.findViewById(R.id.flowSwitch);
-        m_incidentSwitch = (Switch) m_activity.findViewById(R.id.incidentSwitch);
+//        m_flowSwitch = (Switch) m_activity.findViewById(R.id.flowSwitch);
+//        m_incidentSwitch = (Switch) m_activity.findViewById(R.id.incidentSwitch);
 
         setUIListeners();
     }
@@ -68,27 +68,27 @@ public class SettingsPanel {
         /**
          * Enable or disable FLOW map traffic layer.
          */
-        m_flowSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /* TrafficInfo has to be turned on first */
-                m_map.setTrafficInfoVisible(isChecked);
-                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.FLOW, isChecked);
-                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.ONROUTE,isChecked);
-            }
-        });
-        /**
-         * Enable or disable INCIDENT map traffic layer.
-         */
-        m_incidentSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                /* TrafficInfo has to be turned on first */
-                m_map.setTrafficInfoVisible(isChecked);
-                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.INCIDENT,isChecked);
-
-            }
-        });
+//        m_flowSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                /* TrafficInfo has to be turned on first */
+//                m_map.setTrafficInfoVisible(isChecked);
+//                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.FLOW, isChecked);
+//                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.ONROUTE,isChecked);
+//            }
+//        });
+//        /**
+//         * Enable or disable INCIDENT map traffic layer.
+//         */
+//        m_incidentSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                /* TrafficInfo has to be turned on first */
+//                m_map.setTrafficInfoVisible(isChecked);
+//                m_map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.INCIDENT,isChecked);
+//
+//            }
+//        });
 
     }
 }

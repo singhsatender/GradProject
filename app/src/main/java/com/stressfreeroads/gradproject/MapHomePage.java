@@ -35,6 +35,9 @@ import com.here.android.mpa.common.OnEngineInitListener;
 import com.here.android.mpa.common.PositioningManager;
 import com.here.android.mpa.common.RoadElement;
 import com.here.android.mpa.guidance.NavigationManager;
+import com.here.android.mpa.guidance.TrafficNotification;
+import com.here.android.mpa.guidance.TrafficNotificationInfo;
+import com.here.android.mpa.guidance.TrafficWarner;
 import com.here.android.mpa.mapping.Map;
 import com.here.android.mpa.mapping.MapFragment;
 import com.here.android.mpa.mapping.MapMarker;
@@ -155,12 +158,10 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                      * CoreRouter in this case.
                      *
                      */
-                        //destination=data.get(0).getCoordinate();
                         m_startNavigation.setVisibility(View.VISIBLE);
                         initNaviControlButton(data.get(0).getCoordinate());
                         System.out.println("Start navigation");
                         hideKeyboard(MapHomePage.this);
-                        //createRoute(data.get(0).getCoordinate());
                     }
 
                 }
@@ -221,11 +222,18 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     map.removeMapObject(mapRoute);
                     mapRoute=null;
                     m_mapRoute=null;
+                    try {
+                        writer.write("Trip ended"+"\n");
+                        writer.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     dist_time_text.setVisibility(View.GONE);
                     map.setCenter(PositioningManager.getInstance().getPosition().getCoordinate(),Map.Animation.BOW);
                 }
                 }
         });
+
        // m_startNavigation.setVisibility(View.INVISIBLE);
 
 
@@ -247,11 +255,14 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                     positionManager = PositioningManager.getInstance();
                     positionManager.addListener(new WeakReference<>(positionListener));
                     positionManager.start(PositioningManager.LocationMethod.GPS_NETWORK);
-                    currentLocation = PositioningManager.getInstance().getPosition().getCoordinate();
-                    map.setCenter(positionManager.getPosition().getCoordinate(),Map.Animation.BOW);
-                    System.out.println("map.setCentre= "+map.getCenter());
+                   // currentLocation = PositioningManager.getInstance().getPosition().getCoordinate();
+                   map.setCenter(positionManager.getPosition().getCoordinate(),Map.Animation.BOW);
                     // Set the zoom level to the average between min and max
-                    map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+                   // map.setZoomLevel((map.getMaxZoomLevel() + map.getMinZoomLevel()) / 2);
+                    map.setTrafficInfoVisible(true);
+                    map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.FLOW, true);
+                    map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.ONROUTE,true);
+                    map.getMapTrafficLayer().setEnabled(MapTrafficLayer.RenderLayer.INCIDENT,true);
 
                      /*
                          * Get the NavigationManager instance.It is responsible for providing voice
@@ -390,6 +401,9 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
 
     private void initGetLocationButton(){
+        if (map != null && m_positionIndicatorFixed != null) {
+            map.setCenter(positionManager.getPosition().getCoordinate(), Map.Animation.BOW);
+        }
         m_GetLocationButton =(ImageButton)findViewById(R.id.getLocationButton);
         m_GetLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -619,6 +633,12 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
     private void startNavigation() {
 
+        try {
+            writer.write("Trip Started"+"\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         /* Display the position indicator on map */
         map.getPositionIndicator().setVisible(true);
         /* Configure Navigation manager to launch navigation on current map */
@@ -628,10 +648,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         // choose other update modes for different position and zoom behavior
         NavigationManager.getInstance().setMapUpdateMode(NavigationManager.MapUpdateMode.POSITION_ANIMATION);
 
-        // get new guidance instructions
-        m_navigationManager.addNewInstructionEventListener(new WeakReference<NavigationManager.NewInstructionEventListener>(instructionHandler));
-
-                m_navigationManager.startNavigation(m_mapRoute);
+                 m_navigationManager.startNavigation(m_mapRoute);
+                //m_navigationManager.simulate(m_mapRoute,60);
                 map.setTilt(60);
                 startForegroundService();
         /*
@@ -673,6 +691,10 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
     private void addNavigationListeners() {
 
+        // get new guidance instructions
+        m_navigationManager.addNewInstructionEventListener(
+                new WeakReference<NavigationManager.NewInstructionEventListener>(instructionHandler));
+
         /*
          * Register a NavigationManagerEventListener to monitor the status change on
          * NavigationManager
@@ -694,6 +716,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                 new WeakReference<NavigationManager.RerouteListener>(m_reRouteListener));
 
 
+
+
     }
 
     private NavigationManager.PositionListener m_positionListener = new NavigationManager.PositionListener() {
@@ -703,9 +727,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
            if( m_navigationManager.getRunningState().equals(NavigationManager.NavigationState.RUNNING)){
                Maneuver maneuver = NavigationManager.getInstance().getNextManeuver();
                if (maneuver != null) {
-//                   double distanceleft=m_mapRoute.getDestination().distanceTo(geoPosition.getCoordinate());
-//                   distanceleft=Math.round(distanceleft/10);
-//                   distanceleft/=100;
                    float distanceleft=mapRoute.getRoute().getLength()-maneuver.getDistanceFromStart()+maneuver.getDistanceFromPreviousManeuver();
                    distanceleft=Math.round(distanceleft/10);
                    distanceleft/=100;
@@ -736,11 +757,12 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         public void onNewInstructionEvent() {
             Maneuver maneuver = m_navigationManager.getNextManeuver();
             if (maneuver != null) {
-                if (maneuver.getAction() == Maneuver.Action.END) {
-                    //notify the user that the route is complete
+                if (maneuver.getAction() != Maneuver.Action.NO_ACTION) {
+                    //notify the user about next maneuver
                     Toast.makeText(MapHomePage.this,
-                            "Destination reached ",
+                            "Next "+maneuver.getTurn(),
                             Toast.LENGTH_LONG).show();
+
                 }
                 super.onNewInstructionEvent();
             }
@@ -751,22 +773,46 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         @Override
         public void onManeuverEvent() {
             RoadElement roadElement  =  PositioningManager.getInstance().getRoadElement();
-
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            String data = "RoadName: "+roadElement.getRoadName()+", NumberOfLanes: "+roadElement.getNumberOfLanes()
-                    +", Speed Limit: "+roadElement.getSpeedLimit()+", Timestamp: "+timestamp;
+            String data = "RoadName: "+roadElement.getRoadName()+", RouteName: "+roadElement.getRouteName()+
+                    ", NumberOfLanes: "+(roadElement.getNumberOfLanes()== 0?1:roadElement.getNumberOfLanes())
+                    +", Speed Limit(Km/hr): "+(roadElement.getSpeedLimit()*3.6)+", Timestamp: "+timestamp;
             try {
                 writer.write(data+"\n");
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            //TrafficUpdater.request(GeoCoordinate, int, Listener).
+            /*Retrieve current traffic condition*/
+            TrafficWarner trafficWarner = m_navigationManager.getTrafficWarner();
+            trafficWarner.init();
+            trafficWarner.addListener(new WeakReference<TrafficWarner.Listener>(m_trafficListener));
+
+
+
         }
 
 
     };
 
-    private NavigationManager.NavigationManagerEventListener m_navigationManagerEventListener = new NavigationManager.NavigationManagerEventListener() {
+    private TrafficWarner.Listener m_trafficListener = new TrafficWarner.Listener() {
+
+        @Override
+        public void onTraffic(TrafficNotification trafficNotification) {
+            TrafficNotificationInfo trafficNotificationInfo = trafficNotification.getInfoList().get(0);
+            try {
+                writer.write("Traffic severity: "+trafficNotificationInfo.getSeverity()+
+                        ", Traffic severity value: "+trafficNotificationInfo.getSeverity().getValue()
+                        +", Affected Length: "+trafficNotificationInfo.getAffectedLength()+"\n");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+    };
+
+
+     private NavigationManager.NavigationManagerEventListener m_navigationManagerEventListener = new NavigationManager.NavigationManagerEventListener() {
 
         @Override
         public void onRunningStateChanged() {
@@ -778,33 +824,18 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             // This does not happen on re-route
             Toast.makeText(getApplicationContext(), "Your route was udated!", Toast.LENGTH_LONG)
                     .show();
-
-//            m_map.removeMapObject(m_liveSightMapRoute);
-//            m_liveSightMapRoute = new MapRoute(updatedRoute);
-//            showLiveSightRoute();
-        }
-
-        @Override
-        public void onNavigationModeChanged() {
-            //Toast.makeText(MapHomePage.this, "Navigation mode changed", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onEnded(NavigationManager.NavigationMode navigationMode) {
             Toast.makeText(MapHomePage.this, navigationMode + " was ended", Toast.LENGTH_SHORT).show();
             stopForegroundService();
-        }
-
-        @Override
-        public void onMapUpdateModeChanged(NavigationManager.MapUpdateMode mapUpdateMode) {
-            //Toast.makeText(MapHomePage.this, "Map update mode is changed to " + mapUpdateMode,
-                   // Toast.LENGTH_SHORT).show();
-        }
-
-        @Override
-        public void onCountryInfo(String s, String s1) {
-//            Toast.makeText(MapHomePage.this, "Country info updated from " + s + " to " + s1,
-//                    Toast.LENGTH_SHORT).show();
+            try {
+                writer.write("Trip ended"+"\n");
+                writer.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     };
 
