@@ -158,7 +158,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                      * CoreRouter in this case.
                      *
                      */
-                        m_startNavigation.setVisibility(View.VISIBLE);
+
                         initNaviControlButton(data.get(0).getCoordinate());
                         System.out.println("Start navigation");
                         hideKeyboard(MapHomePage.this);
@@ -211,25 +211,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                 Toast.LENGTH_SHORT).show();
                     }
                 } else{
-                    m_navigationManager.stop();
-                    stopForegroundService();
-                    map.removeMapObject(mMarker);
-                    mMarker=null;
-                    mGeoAutocomplete.setText("");
-                    m_startNavigation.setText("Start Navigation");
-                    m_startNavigation.setBackgroundColor(Color.GREEN);
-                    isNavigationPossible=false;
-                    map.removeMapObject(mapRoute);
-                    mapRoute=null;
-                    m_mapRoute=null;
-                    try {
-                        writer.write("Trip ended"+"\n");
-                        writer.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    dist_time_text.setVisibility(View.GONE);
-                    map.setCenter(PositioningManager.getInstance().getPosition().getCoordinate(),Map.Animation.BOW);
+                    stopNavigation();
                 }
                 }
         });
@@ -238,6 +220,30 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
 
     }
+
+    private void stopNavigation(){
+        m_navigationManager.stop();
+        stopForegroundService();
+        map.removeMapObject(mMarker);
+        mMarker=null;
+        mGeoAutocomplete.setText("");
+        m_startNavigation.setVisibility(View.INVISIBLE);
+        m_startNavigation.setText("Start Navigation");
+        m_startNavigation.setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+        isNavigationPossible=false;
+        map.removeMapObject(mapRoute);
+        mapRoute=null;
+        m_mapRoute=null;
+        try {
+            writer.write("Trip ended"+"\n");
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        dist_time_text.setVisibility(View.GONE);
+        map.setCenter(PositioningManager.getInstance().getPosition().getCoordinate(),Map.Animation.BOW);
+    }
+
 
     public void initializeMap()
     {
@@ -534,7 +540,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /* Define waypoints for the route */
         /* START: Current Location */
         RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(),PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
-       // RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
+        //RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(),finalPosition.getLongitude()));
 
@@ -592,6 +598,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
                                 AddTextBox(allCordinates.get(allCordinates.size()/2),dist,getTimesec);
 
                                 //startNavigation();
+                                m_startNavigation.setVisibility(View.VISIBLE);
                             } else {
                                 Toast.makeText(MapHomePage.this,
                                         "Error:route results returned is not valid",
@@ -833,6 +840,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             try {
                 writer.write("Trip ended"+"\n");
                 writer.close();
+                stopNavigation();
             } catch (Exception e) {
                 e.printStackTrace();
             }
