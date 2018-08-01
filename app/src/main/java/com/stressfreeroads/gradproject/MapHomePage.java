@@ -855,11 +855,11 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             Toast.makeText(getApplicationContext(), "reroute begin", Toast.LENGTH_SHORT).show();
         }
 
-        @Override
-        public void onRerouteEnd(Route route){
-            super.onRerouteEnd(route);
-            Toast.makeText(getApplicationContext(), "reroute end", Toast.LENGTH_SHORT).show();
-        }
+      //  @Override
+//        public void onRerouteEnd(Route route){
+//            super.onRerouteEnd(route);
+//            Toast.makeText(getApplicationContext(), "reroute end", Toast.LENGTH_SHORT).show();
+//        }
     };
     //for TextBox to display Distance
     private void AddTextBox(GeoCoordinate geo,float dist,int getTimesec){
