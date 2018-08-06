@@ -1,81 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.stressfreeroads.gradproject.ProfileManager"
     android:gravity="center_horizontal"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:context="com.stressfreeroads.gradproject.ProfileManager">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Please provide your preference"
         android:layout_marginTop="20dp"
-        android:textSize="20sp"/>
+        android:text="Please provide your preference"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/question_num"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Q1"
         android:layout_marginTop="30dp"
-        android:textSize="20sp"/>
+        android:text="Q1"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/question_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Question"
         android:layout_marginTop="20dp"
-        android:textSize="22sp"/>
+        android:text="Question"
+        android:textSize="22sp" />
+
     <RadioGroup
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/radio"
-        >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
-    <RadioButton
-        android:id="@+id/ansBtn1"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="Very strong dislike/ avoid at all costs"
-        android:layout_marginTop="40dp"
-        android:background="@drawable/custom_button_background"
-        />
+        <RadioButton
+            android:id="@+id/ansBtn1"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="40dp"
+            android:background="@drawable/custom_button_background"
+            android:text="Very strong dislike/ avoid at all costs" />
 
-    <RadioButton
-        android:id="@+id/ansBtn2"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="Dislike/ sometimes avoid"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/custom_button_background"/>
+        <RadioButton
+            android:id="@+id/ansBtn2"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/custom_button_background"
+            android:text="Dislike/ sometimes avoid" />
 
-    <RadioButton
-        android:id="@+id/ansBtn3"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="Don’t care"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/custom_button_background"/>
+        <RadioButton
+            android:id="@+id/ansBtn3"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/custom_button_background"
+            android:text="Don’t care" />
 
-    <RadioButton
-        android:id="@+id/ansBtn4"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="Like/ sometimes prefer"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/custom_button_background"/>
+        <RadioButton
+            android:id="@+id/ansBtn4"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/custom_button_background"
+            android:text="Like/ sometimes prefer" />
 
-    <RadioButton
-        android:id="@+id/ansBtn5"
-        android:layout_width="300dp"
-        android:layout_height="40dp"
-        android:text="Very strong like/ always prefer"
-        android:layout_marginTop="6dp"
-        android:background="@drawable/custom_button_background"/>
+        <RadioButton
+            android:id="@+id/ansBtn5"
+            android:layout_width="300dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/custom_button_background"
+            android:text="Very strong like/ always prefer" />
 
     </RadioGroup>
 
@@ -83,11 +81,12 @@
         android:id="@+id/next_btn"
         android:layout_width="match_parent"
         android:layout_height="40dp"
-        android:layout_marginRight="10dp"
         android:layout_marginLeft="10dp"
-        android:text="Next Question >"
+        android:layout_marginRight="10dp"
         android:layout_marginTop="24dp"
-        android:onClick="showNextQuestion"/>
-
+        android:onClick="showNextQuestion"
+        android:background="@drawable/navigationbutton"
+        android:textColor="#FFF"
+        android:text="Next Question >" />
 
 </LinearLayout>

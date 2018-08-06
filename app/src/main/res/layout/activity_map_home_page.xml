@@ -1,17 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-android:layout_width="fill_parent"
-android:layout_height="fill_parent"
-android:orientation="vertical"
-android:keepScreenOn="true"
-tools:context="com.stressfreeroads.gradproject.MapHomePage">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:keepScreenOn="true"
+    android:orientation="vertical"
+    tools:context="com.stressfreeroads.gradproject.MapHomePage">
 
-<fragment
-    android:id="@+id/mapfragment"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    class="com.here.android.mpa.mapping.MapFragment" />
+    <fragment
+        android:id="@+id/mapfragment"
+        class="com.here.android.mpa.mapping.MapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/nextManeuver"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentLeft="true"
+        android:textAlignment="center"
+        android:paddingTop="10dp"
+        android:textColor="#000"
+        android:background="#DCDCDC"
+        android:textSize="20dp"
+        android:text="NextManeuver"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:id="@+id/settingsPanelLayout"
@@ -30,7 +45,7 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
             android:paddingTop="@dimen/abc_action_bar_subtitle_bottom_margin_material"
             android:text="MAP SCHEMES"
             android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#fffcfc"/>
+            android:textColor="#fffcfc" />
 
         <RadioGroup
             android:id="@+id/mapModeRadioGroup"
@@ -48,7 +63,7 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
                 android:background="@drawable/generic_button_bar_i"
                 android:button="@null"
                 android:gravity="center_horizontal|center_vertical"
-                android:text="@string/NormalMode"/>
+                android:text="@string/NormalMode" />
 
             <RadioButton
                 android:id="@+id/hybridModeBtn"
@@ -58,7 +73,7 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
                 android:background="@drawable/generic_button_bar_i"
                 android:button="@null"
                 android:gravity="center_horizontal|center_vertical"
-                android:text="@string/HybridMode"/>
+                android:text="@string/HybridMode" />
 
             <RadioButton
                 android:id="@+id/terrainModeBtn"
@@ -75,37 +90,6 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
                 android:text="@string/TerrainMode" />
         </RadioGroup>
 
-        <!--<TextView-->
-            <!--android:id="@+id/textView"-->
-            <!--android:layout_width="fill_parent"-->
-            <!--android:layout_height="35dp"-->
-            <!--android:paddingTop="@dimen/abc_action_bar_subtitle_bottom_margin_material"-->
-            <!--android:text="TRAFFIC LAYER ATTRIBUTES"-->
-            <!--android:textAppearance="?android:attr/textAppearanceMedium"-->
-            <!--android:textColor="#fffcfc"/>-->
-
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="match_parent"-->
-            <!--android:orientation="vertical"-->
-            <!--android:padding="@dimen/abc_dropdownitem_text_padding_left">-->
-
-            <!--&lt;!&ndash;<Switch&ndash;&gt;-->
-                <!--&lt;!&ndash;android:id="@+id/flowSwitch"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:layout_width="fill_parent"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:layout_height="35dp"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:text="@string/Flow"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:textColor="#fffcfc"/>&ndash;&gt;-->
-
-            <!--&lt;!&ndash;<Switch&ndash;&gt;-->
-                <!--&lt;!&ndash;android:id="@+id/incidentSwitch"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:layout_width="fill_parent"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:layout_height="35dp"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:text="@string/Incident"&ndash;&gt;-->
-                <!--&lt;!&ndash;android:textColor="#fffcfc"/>&ndash;&gt;-->
-
-        <!--</LinearLayout>-->
-
     </LinearLayout>
 
     <ImageButton
@@ -120,20 +104,17 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
         android:gravity="center"
         android:src="@mipmap/settings" />
 
-
     <ImageButton
-    android:id="@+id/getLocationButton"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentLeft="true"
-    android:layout_alignParentStart="true"
-    android:layout_gravity="bottom"
+        android:id="@+id/getLocationButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="40dp"
         android:layout_marginLeft="20dp"
-    android:layout_marginBottom="40dp"
-    android:src="@drawable/currentlocation"
-
-    />
+        android:src="@drawable/currentlocation" />
 
     <Button
         android:id="@+id/startNavigation"
@@ -142,27 +123,26 @@ tools:context="com.stressfreeroads.gradproject.MapHomePage">
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true"
         android:layout_gravity="bottom"
-        android:padding="5dp"
-        android:layout_marginLeft="120dp"
         android:layout_marginBottom="40dp"
+        android:layout_marginLeft="120dp"
+        android:background="@drawable/navigationbutton"
+        android:padding="5dp"
         android:text="Start Navigation"
         android:textColor="#FFF"
-        android:visibility="gone"
-        android:background="@drawable/navigationbutton"
-        />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/distance_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="5dp"
-        android:textSize="20dp"
-        android:textColor="@color/colorPrimaryDark"
-        android:textStyle="bold"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_marginBottom="100dp"
+        android:padding="5dp"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="20dp"
+        android:textStyle="bold"
         android:visibility="gone" />
 
 </RelativeLayout>

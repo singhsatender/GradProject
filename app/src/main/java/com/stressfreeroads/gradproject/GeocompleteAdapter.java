@@ -20,8 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Suggestion list adapter
+ * Fetches address and publishes it to UI.
  */
+
 public class GeocompleteAdapter extends BaseAdapter implements Filterable {
 
     private static final String BASE_URL = "http://autocomplete.geocoder.api.here.com/6.2/suggest.json";
@@ -128,7 +129,7 @@ public class GeocompleteAdapter extends BaseAdapter implements Filterable {
         } catch (Exception e) {
             // do nothing
         }
-        System.out.println("current location in adapter= "+ currentLocation);
+        System.out.println("current location in adapter= " + currentLocation);
         Uri.Builder urlBuild = Uri
                 .parse(BASE_URL)
                 .buildUpon()

@@ -18,6 +18,7 @@ public class CustomAutoCompleteTextView extends AutoCompleteTextView {
     private static final int MESSAGE_TEXT_CHANGED = 100;
     // delay for making network request, default, not changeable.
     private static final int DEFAULT_AUTOCOMPLETE_DELAY = 200;
+
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {

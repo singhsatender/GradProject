@@ -10,6 +10,7 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
+ * DB Manager to manage user profile data. Its not used yet as we are file system for easy access.
  * Created by singh on 4/21/2018.
  */
 
@@ -32,14 +33,10 @@ public class DBManager extends SQLiteOpenHelper {
     public static final String COLUMN_ANS7="ans7";
     public static final String COLUMN_ANS8="ans8";
 
-
-
     private String[] allColumns={COLUMN_ID, COLUMN_NAME, COLUMN_EMAIL, COLUMN_MOB_NUM, COLUMN_ANS1,
             COLUMN_ANS2, COLUMN_ANS3, COLUMN_ANS4, COLUMN_ANS5, COLUMN_ANS6, COLUMN_ANS7, COLUMN_ANS8 };
 
     private SQLiteDatabase sqlDB;
-
-
 
     public DBManager(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -104,7 +101,6 @@ public class DBManager extends SQLiteOpenHelper {
 
         long insertId=sqlDB.insert(USER_PROFILE_TABLE, null, values);
         Log.d("INSERTED","INSERTED => " + insertId);
-
     }
 
     public void truncate()
@@ -112,6 +108,7 @@ public class DBManager extends SQLiteOpenHelper {
         sqlDB.execSQL("DELETE FROM "+USER_PROFILE_TABLE);
     }
 
+    //TODO:Useful to fect data if db is used.
     //This function is used to fetch all the user details from the database
 //    public ArrayList<User> getAllDetails(){
 //

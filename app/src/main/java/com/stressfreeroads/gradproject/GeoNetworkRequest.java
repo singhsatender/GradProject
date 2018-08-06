@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GeoNetworkRequest - Class to make network request
+ * GeoNetworkRequest - Class to make network request to fetch address
  */
 public class GeoNetworkRequest {
 
@@ -96,7 +96,7 @@ public class GeoNetworkRequest {
                 if (suggestionList != null && suggestionList.size() > 0) {
                     for (ResponseModel.Suggestion suggestion : suggestionList) {
                         String s = suggestion.getLabel();
-                        System.out.println("label = "+ s);
+                        System.out.println("label = " + s);
 
                         String[] split = s.split(",");
                         String result = " ";
@@ -104,7 +104,7 @@ public class GeoNetworkRequest {
                             result += (split[i] + ", ");
 
                         }
-                        System.out.println("final result = "+result);
+                        System.out.println("final result = " + result);
                         responseList.add(result.trim());
                     }
                 }

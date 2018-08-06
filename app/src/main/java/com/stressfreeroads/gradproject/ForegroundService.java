@@ -1,9 +1,5 @@
 package com.stressfreeroads.gradproject;
 
-/**
- * Created by singh on 6/14/2018.
- */
-
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -14,6 +10,12 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+
+
+/**
+ * Manages Services used in Here Map.
+ * Created by singh on 6/14/2018.
+ */
 
 
 public class ForegroundService extends Service {
