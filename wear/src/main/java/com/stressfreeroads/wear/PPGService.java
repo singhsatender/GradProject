@@ -85,7 +85,7 @@ public class PPGService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-        int sec = 30;
+        int sec = 40;
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(mTimestamp.getTime());
         cal.add(Calendar.SECOND, sec);
