@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by uwe on 01.04.15.
+ * Created by satender.
  */
 public class PPGService extends Service implements SensorEventListener {
 

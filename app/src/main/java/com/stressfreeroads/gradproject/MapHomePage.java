@@ -549,8 +549,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         /* Define waypoints for the route */
         /* START: Current Location */
-        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(), PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
-        //RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
+        //RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(), PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
+        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(), finalPosition.getLongitude()));
 
@@ -661,8 +661,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         // choose other update modes for different position and zoom behavior
         NavigationManager.getInstance().setMapUpdateMode(NavigationManager.MapUpdateMode.POSITION_ANIMATION);
 
-        m_navigationManager.startNavigation(m_mapRoute);
-        //m_navigationManager.simulate(m_mapRoute,60);
+        //m_navigationManager.startNavigation(m_mapRoute);
+        m_navigationManager.simulate(m_mapRoute,60);
         map.setTilt(60);
         startForegroundService();
         /*
@@ -807,7 +807,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
             int Speed = (int)(roadElement.getSpeedLimit () * 3.6);
             Speed = (Speed == 0? 10: Speed);
 
-            String data = "RoadName: " + roadElement.getRoadName() + ", RouteName: " + roadElement.getRouteName() +
+            String data = "RoadName: " + roadElement.getRoadName() + ", GeoCordinates: "+roadElement.getGeometry() +
                     ", NumberOfLanes: " + (roadElement.getNumberOfLanes() == 0 ? 1 : roadElement.getNumberOfLanes())
                     + ", Speed Limit(Km/hr): " + Speed + ", Timestamp: " + timestamp;
             try {
