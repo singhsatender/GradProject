@@ -29,6 +29,8 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
     private static final String LOG_TAG = "MainWearActivity";
     BufferedWriter writer;
     Long x;
+    Timestamp mtimestamp;
+
 
 
     @Override
@@ -39,12 +41,16 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
                 // as soon as layout is there...
                 mTextView = (TextView) findViewById(R.id.ppg);//
         mstart = (Button)findViewById(R.id.start);
+
+
+
         mstart.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
         // bind to our service.
         bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
-        bindService(new Intent(MainActivity.this, HeartRateService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+        //bindService(new Intent(MainActivity.this, HeartRateService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+                mtimestamp = new Timestamp(System.currentTimeMillis());
 
                 fileManager();
 
@@ -73,8 +79,8 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
             Log.d(LOG_TAG, "connected to service.");
             // set our change listener to get change events
-           // ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
-            ((HeartRateService.HeartRateServiceBinder) binder).setChangeListener(MainActivity.this);
+            ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
+           // ((HeartRateService.HeartRateServiceBinder) binder).setChangeListener(MainActivity.this);
         }
 
         @Override

@@ -62,9 +62,12 @@ public class PPGService extends Service implements SensorEventListener {
         // register us as a sensor listener
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         Sensor mPpgRateSensor = mSensorManager.getDefaultSensor(33171027);
+        Sensor mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         // delay SENSOR_DELAY_UI is sufficient
         boolean res = mSensorManager.registerListener(this, mPpgRateSensor,  SensorManager.SENSOR_DELAY_FASTEST);
+        boolean res1 = mSensorManager.registerListener(this, mHeartRateSensor,  SensorManager.SENSOR_DELAY_FASTEST);
         Log.d(LOG_TAG, " sensor registered: " + (res ? "yes" : "no"));
+        Log.d(LOG_TAG, " sensor registered1: " + (res1 ? "yes" : "no"));
 
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
         mGoogleApiClient.connect();
@@ -83,6 +86,19 @@ public class PPGService extends Service implements SensorEventListener {
         if(sensorEvent.sensor.getType()==33171027 && sensorEvent.values.length>0 ) {
             int newValue = Math.round(sensorEvent.values[0]);
               //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
+            // only do something if the value differs from the value before and the value is not 0.
+            if(currentValue != newValue && newValue!=0) {
+                // save the new value
+                currentValue = newValue;
+                // send the value to the listener
+                if(onChangeListener!=null) {
+                    onChangeListener.onValueChanged(newValue);
+                }
+            }
+        }
+        if(sensorEvent.sensor.getType()==Sensor.TYPE_HEART_RATE && sensorEvent.values.length>0 ) {
+            int newValue = Math.round(sensorEvent.values[0]);
+            //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
             // only do something if the value differs from the value before and the value is not 0.
             if(currentValue != newValue && newValue!=0) {
                 // save the new value
