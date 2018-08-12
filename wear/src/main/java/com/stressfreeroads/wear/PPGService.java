@@ -18,6 +18,7 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -31,6 +32,7 @@ public class PPGService extends Service implements SensorEventListener {
     private IBinder binder = new PPGServiceBinder();
     private OnChangeListener onChangeListener;
     private GoogleApiClient mGoogleApiClient;
+    public static Timestamp mTimestamp;
 
     // interface to pass a ppg value to the implementing class
     public interface OnChangeListener {
@@ -82,30 +84,39 @@ public class PPGService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        // is this a heartbeat event and does it have data?
-        if(sensorEvent.sensor.getType()==33171027 && sensorEvent.values.length>0 ) {
-            int newValue = Math.round(sensorEvent.values[0]);
-              //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
-            // only do something if the value differs from the value before and the value is not 0.
-            if(currentValue != newValue && newValue!=0) {
-                // save the new value
-                currentValue = newValue;
-                // send the value to the listener
-                if(onChangeListener!=null) {
-                    onChangeListener.onValueChanged(newValue);
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        int sec = 30;
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(mTimestamp.getTime());
+        cal.add(Calendar.SECOND, sec);
+        Timestamp limit = new Timestamp(cal.getTime().getTime());
+        if(currentTimestamp.before(limit)) {
+            // is this a heartbeat event and does it have data?
+            if (sensorEvent.sensor.getType() == 33171027 && sensorEvent.values.length > 0) {
+                int newValue = Math.round(sensorEvent.values[0]);
+                //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
+                // only do something if the value differs from the value before and the value is not 0.
+                if (currentValue != newValue && newValue != 0) {
+                    // save the new value
+                    currentValue = newValue;
+                    // send the value to the listener
+                    if (onChangeListener != null) {
+                        onChangeListener.onValueChanged(newValue);
+                    }
                 }
             }
-        }
-        if(sensorEvent.sensor.getType()==Sensor.TYPE_HEART_RATE && sensorEvent.values.length>0 ) {
-            int newValue = Math.round(sensorEvent.values[0]);
-            //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
-            // only do something if the value differs from the value before and the value is not 0.
-            if(currentValue != newValue && newValue!=0) {
-                // save the new value
-                currentValue = newValue;
-                // send the value to the listener
-                if(onChangeListener!=null) {
-                    onChangeListener.onValueChanged(newValue);
+        } else {
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_HEART_RATE && sensorEvent.values.length > 0) {
+                int newValue = Math.round(sensorEvent.values[0]);
+                //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
+                // only do something if the value differs from the value before and the value is not 0.
+                if (currentValue != newValue && newValue != 0) {
+                    // save the new value
+                    currentValue = newValue;
+                    // send the value to the listener
+                    if (onChangeListener != null) {
+                        onChangeListener.onValueChanged(newValue);
+                    }
                 }
             }
         }
@@ -116,6 +127,10 @@ public class PPGService extends Service implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    public static void setTimestamp(Timestamp timestamp){
+        mTimestamp = timestamp;
     }
 
 

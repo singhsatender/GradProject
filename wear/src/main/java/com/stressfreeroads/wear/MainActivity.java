@@ -29,7 +29,6 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
     private static final String LOG_TAG = "MainWearActivity";
     BufferedWriter writer;
     Long x;
-    Timestamp mtimestamp;
 
 
 
@@ -49,11 +48,8 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
             public void onClick(View v) {
         // bind to our service.
         bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
-        //bindService(new Intent(MainActivity.this, HeartRateService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
-                mtimestamp = new Timestamp(System.currentTimeMillis());
-
+                PPGService.setTimestamp(new Timestamp(System.currentTimeMillis()));
                 fileManager();
-
             }
         });
 
