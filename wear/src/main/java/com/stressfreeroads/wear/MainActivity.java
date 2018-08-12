@@ -21,7 +21,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.Timestamp;
 
-public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener, HeartRateService.OnChangeListener  {
+public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener  {
 
     private TextView mTextView;
     private Button mstart;
@@ -76,7 +76,6 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
             Log.d(LOG_TAG, "connected to service.");
             // set our change listener to get change events
             ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
-           // ((HeartRateService.HeartRateServiceBinder) binder).setChangeListener(MainActivity.this);
         }
 
         @Override

@@ -91,10 +91,8 @@ public class PPGService extends Service implements SensorEventListener {
         cal.add(Calendar.SECOND, sec);
         Timestamp limit = new Timestamp(cal.getTime().getTime());
         if(currentTimestamp.before(limit)) {
-            // is this a heartbeat event and does it have data?
-            if (sensorEvent.sensor.getType() == 33171027 && sensorEvent.values.length > 0) {
+            if (sensorEvent.sensor.getType() == Sensor.TYPE_HEART_RATE && sensorEvent.values.length > 0) {
                 int newValue = Math.round(sensorEvent.values[0]);
-                //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
                 // only do something if the value differs from the value before and the value is not 0.
                 if (currentValue != newValue && newValue != 0) {
                     // save the new value
@@ -105,8 +103,10 @@ public class PPGService extends Service implements SensorEventListener {
                     }
                 }
             }
+
         } else {
-            if (sensorEvent.sensor.getType() == Sensor.TYPE_HEART_RATE && sensorEvent.values.length > 0) {
+            // is this a heartbeat event and does it have data?
+            if (sensorEvent.sensor.getType() == 33171027 && sensorEvent.values.length > 0) {
                 int newValue = Math.round(sensorEvent.values[0]);
                 //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
                 // only do something if the value differs from the value before and the value is not 0.
@@ -133,32 +133,4 @@ public class PPGService extends Service implements SensorEventListener {
         mTimestamp = timestamp;
     }
 
-
-    /**
-     * sends a string message to the connected handheld using the google api client (if available)
-     * @param message
-     */
-//    private void sendMessageToHandheld(final String message) {
-//
-//        if (mGoogleApiClient == null)
-//            return;
-//
-//        Log.d(LOG_TAG,"sending a message to handheld: "+message);
-//
-//        // use the api client to send the heartbeat value to our handheld
-//        final PendingResult<NodeApi.GetConnectedNodesResult> nodes = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient);
-//        nodes.setResultCallback(new ResultCallback<NodeApi.GetConnectedNodesResult>() {
-//            @Override
-//            public void onResult(NodeApi.GetConnectedNodesResult result) {
-//                final List<Node> nodes = result.getNodes();
-//                if (nodes != null) {
-//                    for (int i=0; i<nodes.size(); i++) {
-//                        final Node node = nodes.get(i);
-//                        Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(), null, message.getBytes());
-//                    }
-//                }
-//            }
-//        });
-//
-//    }
 }
