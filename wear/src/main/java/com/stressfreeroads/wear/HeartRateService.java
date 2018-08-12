@@ -11,28 +11,21 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
-import java.sql.Timestamp;
-import java.util.List;
-
 /**
- * Created by uwe on 01.04.15.
+ * Created by satender.
  */
-public class PPGService extends Service implements SensorEventListener {
+public class HeartRateService extends Service implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private int currentValue=0;
-    private static final String LOG_TAG = "MyPPG";
-    private IBinder binder = new PPGServiceBinder();
+    private static final String LOG_TAG = "MyHeartRate";
+    private IBinder binder = new HeartRateServiceBinder();
     private OnChangeListener onChangeListener;
     private GoogleApiClient mGoogleApiClient;
 
-    // interface to pass a ppg value to the implementing class
+    // interface to pass a Heart Rate value to the implementing class
     public interface OnChangeListener {
         void onValueChanged(int newValue);
     }
@@ -41,7 +34,7 @@ public class PPGService extends Service implements SensorEventListener {
      *
      * Binder for this service. The binding activity passes a listener we send the heartbeat to.
      */
-    public class PPGServiceBinder extends Binder {
+    public class HeartRateServiceBinder extends Binder {
         public void setChangeListener(OnChangeListener listener) {
             onChangeListener = listener;
             // return currently known value
@@ -61,9 +54,9 @@ public class PPGService extends Service implements SensorEventListener {
         super.onCreate();
         // register us as a sensor listener
         mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-        Sensor mPpgRateSensor = mSensorManager.getDefaultSensor(33171027);
+        Sensor mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
         // delay SENSOR_DELAY_UI is sufficient
-        boolean res = mSensorManager.registerListener(this, mPpgRateSensor,  SensorManager.SENSOR_DELAY_FASTEST);
+        boolean res = mSensorManager.registerListener(this, mHeartRateSensor,  SensorManager.SENSOR_DELAY_FASTEST);
         Log.d(LOG_TAG, " sensor registered: " + (res ? "yes" : "no"));
 
         mGoogleApiClient = new GoogleApiClient.Builder(this).addApi(Wearable.API).build();
@@ -80,9 +73,8 @@ public class PPGService extends Service implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
         // is this a heartbeat event and does it have data?
-        if(sensorEvent.sensor.getType()==33171027 && sensorEvent.values.length>0 ) {
+        if(sensorEvent.sensor.getType()==Sensor.TYPE_HEART_RATE && sensorEvent.values.length>0 ) {
             int newValue = Math.round(sensorEvent.values[0]);
-              //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
             // only do something if the value differs from the value before and the value is not 0.
             if(currentValue != newValue && newValue!=0) {
                 // save the new value

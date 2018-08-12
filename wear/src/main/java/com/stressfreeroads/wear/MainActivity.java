@@ -21,13 +21,12 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.Timestamp;
 
-public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener  {
+public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener, HeartRateService.OnChangeListener  {
 
     private TextView mTextView;
     private Button mstart;
     private Button mstop;
     private static final String LOG_TAG = "MainWearActivity";
-    private static FileOutputStream outputStream;
     BufferedWriter writer;
     Long x;
 
@@ -37,23 +36,16 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
-
-//        final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
-//        // inflate layout depending on watch type (round or square)
-//        stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
-//            @Override
-//            public void onLayoutInflated(WatchViewStub stub) {
-
                 // as soon as layout is there...
                 mTextView = (TextView) findViewById(R.id.ppg);//
-//            }
-//        });
         mstart = (Button)findViewById(R.id.start);
         mstart.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
-                // bind to our service.
-                bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+        // bind to our service.
+        bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+        bindService(new Intent(MainActivity.this, HeartRateService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+
                 fileManager();
 
             }
@@ -65,7 +57,6 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
                 // Code here executes on main thread after user presses button
                 try {
                     unbindService(mServiceConnection);
-                   // outputStream.close();
                     writer.close();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -82,7 +73,8 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
             Log.d(LOG_TAG, "connected to service.");
             // set our change listener to get change events
-            ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
+           // ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
+            ((HeartRateService.HeartRateServiceBinder) binder).setChangeListener(MainActivity.this);
         }
 
         @Override
@@ -104,12 +96,6 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
 
             // Adds a line to the file
              writer = new BufferedWriter(new FileWriter(testFile, true /*append*/));
-            //writer.write("This is a test file.");
-            //writer.close();
-
-//            System.out.println("Name of the file : PPGdata"+x.toString());
-//            outputStream = openFileOutput("PPGdata"+x.toString() + ".txt", MODE_WORLD_READABLE);   //create file in directory context.getFilesDir()
-//            //outputStream.write("This is a text file".getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -129,7 +115,6 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
         Log.d(LOG_TAG,"sending new value to listener: " + timestampedVal);
         try {
             writer.write(timestampedVal+"\n");
-            //outputStream.write(timestampedVal.getBytes()); //revert back using Arrays.tostring(bytes)
         } catch (Exception e) {
             e.printStackTrace();
         }

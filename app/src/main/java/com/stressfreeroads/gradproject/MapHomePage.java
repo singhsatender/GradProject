@@ -804,9 +804,12 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         public void onManeuverEvent() {
             RoadElement roadElement = PositioningManager.getInstance().getRoadElement();
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            int Speed = (int)(roadElement.getSpeedLimit () * 3.6);
+            Speed = (Speed == 0? 10: Speed);
+
             String data = "RoadName: " + roadElement.getRoadName() + ", RouteName: " + roadElement.getRouteName() +
                     ", NumberOfLanes: " + (roadElement.getNumberOfLanes() == 0 ? 1 : roadElement.getNumberOfLanes())
-                    + ", Speed Limit(Km/hr): " + (roadElement.getSpeedLimit() * 3.6) + ", Timestamp: " + timestamp;
+                    + ", Speed Limit(Km/hr): " + Speed + ", Timestamp: " + timestamp;
             try {
                 writer.write(data + "\n");
             } catch (Exception e) {
