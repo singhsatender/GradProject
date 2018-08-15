@@ -104,6 +104,13 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private long hours;
     private long min;
     private RouteTta rrta;
+    private static String opt1 = "Very strong dislike/ avoid at all costs";
+    private static String opt2 = "Dislike/ sometimes avoid";
+    private static String opt3 = "Don’t care";
+    private static String opt4 = "Like/ sometimes prefer";
+    private static String opt5 = "Very strong like/ always prefer";
+
+
 
     private MapRoute mapRoute = null;
     private GeoCoordinate currentLocation = null;
@@ -526,6 +533,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
      * @param finalPosition
      */
     private void createRoute(GeoCoordinate finalPosition) {
+
+        String [] answers = ProfileManager.getAnswers();
         /* Initialize a CoreRouter */
         CoreRouter coreRouter = new CoreRouter();
 
@@ -537,11 +546,23 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
          */
         RouteOptions routeOptions = new RouteOptions();
 
-        /* Disable highway in this route. */
-        //routeOptions.setHighwaysAllowed(false);
+        /* Disable highway in this route. 1 */
+        if(answers[3].equals(opt1) ||answers[3].equals(opt2)) {
+            routeOptions.setHighwaysAllowed(false);
+        } else {
+            routeOptions.setHighwaysAllowed(true);
+        }
 
-        /* Calculate the fastest route available. */
-        routeOptions.setRouteType(RouteOptions.Type.FASTEST);
+        /* Calculate the fastest route available. 4 */
+        if(answers[1].equals(opt1) || answers[6].equals(opt2)) {
+            routeOptions.setRouteType(RouteOptions.Type.FASTEST);
+        } else if(answers[1].equals(opt4) || answers[6].equals(opt5)){
+            routeOptions.setRouteType(RouteOptions.Type.SHORTEST);
+        }
+        else {
+            routeOptions.setRouteType(RouteOptions.Type.BALANCED);
+        }
+
         /* Calculate 1 route. */
         routeOptions.setRouteCount(1);
         /* Finally set the route option */
@@ -549,8 +570,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         /* Define waypoints for the route */
         /* START: Current Location */
-        //RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(), PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
-        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
+        RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(), PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
+       // RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(), finalPosition.getLongitude()));
 
@@ -661,8 +682,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         // choose other update modes for different position and zoom behavior
         NavigationManager.getInstance().setMapUpdateMode(NavigationManager.MapUpdateMode.POSITION_ANIMATION);
 
-        //m_navigationManager.startNavigation(m_mapRoute);
-        m_navigationManager.simulate(m_mapRoute,60);
+        m_navigationManager.startNavigation(m_mapRoute);
+        //m_navigationManager.simulate(m_mapRoute,60);
         map.setTilt(60);
         startForegroundService();
         /*

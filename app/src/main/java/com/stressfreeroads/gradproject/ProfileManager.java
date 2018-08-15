@@ -33,28 +33,25 @@ public class ProfileManager extends AppCompatActivity {
 
     String questions[] = {"Highways",
             "Exploring unfamiliar roads",
-            "Stuck behind slow drivers",
-            "Having flexible times",
-            "Driving in rainy weather",
-            "Driving in snowy weather",
-            "Driving at night",
-            "Taking longer routes but with less traffic"};
+            "Taking longer routes but with less traffic",
+            "Having flexible times"};
 
     ArrayList<String> questionArray = new ArrayList<>(Arrays.asList(questions));
-    String[] answers = new String[11];
+
+    public static String[] getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(String[] answers) {
+        this.answers = answers;
+    }
+
+    public static String[] answers = new String[7];
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_manager);
-
-        if (SaveSharedPreference.getUserName(ProfileManager.this).length() == 0) {
-            // call Login Activity
-        } else {
-            //Redirect to Maps Hompeage
-            Intent i = new Intent(getApplicationContext(), MapHomePage.class);
-            startActivity(i);
-        }
 
         questionNum = (TextView) findViewById(R.id.question_num);
         questionText = (TextView) findViewById(R.id.question_text);
@@ -145,4 +142,6 @@ public class ProfileManager extends AppCompatActivity {
         super.onStop();
         dbManager.close();
     }
+
+
 }
