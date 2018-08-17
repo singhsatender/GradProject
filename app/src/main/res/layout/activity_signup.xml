@@ -77,8 +77,6 @@
             android:layout_gravity="bottom"
             android:layout_marginTop="40dp"
             android:background="@drawable/navigationbutton"
-            android:gravity="bottom"
-            android:padding="5dp"
             android:text="Next >"
             android:textAlignment="center"
             android:textColor="#FFF" />

@@ -2,7 +2,11 @@ package com.stressfreeroads.gradproject;
 
 
 import android.app.Activity;
+import android.content.Intent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.RadioGroup;
+import android.content.Intent;
 
 import com.here.android.mpa.mapping.Map;
 
@@ -16,6 +20,7 @@ public class SettingsPanel {
     private RadioGroup m_mapModeGroup;
     private Activity m_activity;
     private Map m_map;
+    private Button m_updateProfile;
 
     public SettingsPanel(Activity activity, Map map) {
         m_activity = activity;
@@ -25,6 +30,7 @@ public class SettingsPanel {
 
     private void initUIElements() {
         m_mapModeGroup = (RadioGroup) m_activity.findViewById(R.id.mapModeRadioGroup);
+        m_updateProfile =(Button) m_activity.findViewById(R.id.updateProfile);
         setUIListeners();
     }
 
@@ -51,6 +57,15 @@ public class SettingsPanel {
                         break;
                     default:
                 }
+            }
+        });
+
+        m_updateProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Redirect to Maps Hompeage
+                Intent i = new Intent(m_activity.getApplicationContext(), ProfileManager.class);
+                m_activity.startActivity(i);
             }
         });
 

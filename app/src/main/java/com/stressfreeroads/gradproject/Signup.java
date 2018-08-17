@@ -24,9 +24,9 @@ public class Signup extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         //determine homepage
         SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
-        String name= pref.getString("name", null); // getting String
-        String email = pref.getString("email", null);
-        String mob= pref.getString("mobile_num", null);
+//        String name= pref.getString("name", null); // getting String
+//        String email = pref.getString("email", null);
+//        String mob= pref.getString("mobile_num", null);
 
         String restoredText = pref.getString("name", null);
         if (restoredText != null) {

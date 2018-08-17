@@ -1,6 +1,7 @@
 package com.stressfreeroads.gradproject;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -28,6 +29,12 @@ public class ProfileManager extends AppCompatActivity {
     private RadioGroup radioGroup;
     private RadioButton radioButton;
 
+    private static String opt1 = "Very strong dislike/ avoid at all costs";
+    private static String opt2 = "Dislike/ sometimes avoid";
+    private static String opt3 = "Don’t care";
+    private static String opt4 = "Like/ sometimes prefer";
+    private static String opt5 = "Very strong like/ always prefer";
+
     private int quesCount1 = 1;
     DBManager dbManager;
 
@@ -38,15 +45,9 @@ public class ProfileManager extends AppCompatActivity {
 
     ArrayList<String> questionArray = new ArrayList<>(Arrays.asList(questions));
 
-    public static String[] getAnswers() {
-        return answers;
-    }
-
-    public void setAnswers(String[] answers) {
-        this.answers = answers;
-    }
 
     public static String[] answers = new String[7];
+    SharedPreferences pref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,16 +64,10 @@ public class ProfileManager extends AppCompatActivity {
         next = (Button) findViewById(R.id.next_btn);
         radioGroup = (RadioGroup) findViewById(R.id.radio);
 
-        dbManager = new DBManager(getApplicationContext());
-        dbManager.open();
+//        dbManager = new DBManager(getApplicationContext());
+//        dbManager.open();
+         pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
 
-        //Intent intent = getIntent();
-        Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            answers[0] = (String) extras.get("name").toString();
-            answers[1] = (String) extras.get("email").toString();
-            answers[2] = (String) extras.get("mobile_num").toString();
-        }
 
         showNextQuestion(next);
     }
@@ -102,6 +97,7 @@ public class ProfileManager extends AppCompatActivity {
 
                 questionNum.setText("Q" + quesCount1);
 
+
                 if (quesCount1 == questions.length) {
                     next.setText("Submit Answers");
                 }
@@ -113,7 +109,22 @@ public class ProfileManager extends AppCompatActivity {
                 questionText.setText(question);
 
                 //reset radio buttons
-                radioGroup.clearCheck();
+                if((pref.getString("ans"+(quesCount1+2), null))!=null) {
+                    String temp_ans = pref.getString("ans" + (quesCount1 + 2), null);
+                    if (temp_ans.equals(opt1)) {
+                        radioGroup.check(R.id.ansBtn1);
+                    } else if (temp_ans.equals(opt2)) {
+                        radioGroup.check(R.id.ansBtn2);
+                    } else if (temp_ans.equals(opt3)) {
+                        radioGroup.check(R.id.ansBtn3);
+                    } else if (temp_ans.equals(opt4)) {
+                        radioGroup.check(R.id.ansBtn4);
+                    } else {
+                        radioGroup.check(R.id.ansBtn5);
+                    }
+                } else {
+                    radioGroup.clearCheck();
+                }
 
                 quesCount1++;
 
@@ -133,14 +144,15 @@ public class ProfileManager extends AppCompatActivity {
 
         String answer = (String) radioButton.getText();
 
-        //Save the values in array
-        answers[quesCount1 + 1] = answer;
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("ans"+(quesCount1 + 1), answer);
+        editor.commit(); // commit changes
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        dbManager.close();
     }
 
 

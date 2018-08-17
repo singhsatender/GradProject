@@ -87,6 +87,8 @@
         android:onClick="showNextQuestion"
         android:background="@drawable/navigationbutton"
         android:textColor="#FFF"
-        android:text="Next Question >" />
+        android:text="Next Question >"
+        android:paddingBottom="2dp"
+        android:textAlignment="center"/>
 
 </LinearLayout>

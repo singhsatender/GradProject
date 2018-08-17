@@ -90,6 +90,16 @@
                 android:text="@string/TerrainMode" />
         </RadioGroup>
 
+        <Button
+            android:id="@+id/updateProfile"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:text="Edit Profile"
+            android:background="@drawable/generic_button_bar_i"
+            android:layout_marginBottom="50dp"
+            />
+
     </LinearLayout>
 
     <ImageButton

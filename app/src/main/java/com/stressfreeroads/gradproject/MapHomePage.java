@@ -5,6 +5,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.PointF;
@@ -534,7 +535,11 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
      */
     private void createRoute(GeoCoordinate finalPosition) {
 
-        String [] answers = ProfileManager.getAnswers();
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        String ans3= pref.getString("ans3", null);
+        String ans6= pref.getString("ans6", null);// getting String
+
+       // String [] answers = ProfileManager.getAnswers();
         /* Initialize a CoreRouter */
         CoreRouter coreRouter = new CoreRouter();
 
@@ -547,16 +552,16 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         RouteOptions routeOptions = new RouteOptions();
 
         /* Disable highway in this route. 1 */
-        if(answers[3].equals(opt1) ||answers[3].equals(opt2)) {
+        if(ans3.equals(opt1) ||ans3.equals(opt2)) {
             routeOptions.setHighwaysAllowed(false);
         } else {
             routeOptions.setHighwaysAllowed(true);
         }
 
         /* Calculate the fastest route available. 4 */
-        if(answers[1].equals(opt1) || answers[6].equals(opt2)) {
+        if(ans6.equals(opt1) || ans6.equals(opt2)) {
             routeOptions.setRouteType(RouteOptions.Type.FASTEST);
-        } else if(answers[1].equals(opt4) || answers[6].equals(opt5)){
+        } else if(ans6.equals(opt4) || ans6.equals(opt5)){
             routeOptions.setRouteType(RouteOptions.Type.SHORTEST);
         }
         else {
@@ -571,7 +576,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         /* Define waypoints for the route */
         /* START: Current Location */
         RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(PositioningManager.getInstance().getPosition().getCoordinate().getLatitude(), PositioningManager.getInstance().getPosition().getCoordinate().getLongitude()));
-       // RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
+       //RouteWaypoint startPoint = new RouteWaypoint(new GeoCoordinate(45.4154314,-75.67147890000001));
         /* END: Langley BC */
         RouteWaypoint destination = new RouteWaypoint(new GeoCoordinate(finalPosition.getLatitude(), finalPosition.getLongitude()));
 
