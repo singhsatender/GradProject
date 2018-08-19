@@ -11,4 +11,22 @@
     <string name="Incident">INCIDENT</string>
     <string name="Coverage">COVERAGE</string>
     <string name="search_add">Search Address here !!! </string>
+    <string name="NextManeuver">Next Maneuver</string>
+    <string name="MAP_SCHEMES">MAP SCHEMES</string>
+    <string name="Edit_Profile">Edit Profile</string>
+    <string name="Start_Navigation">Start Navigation</string>
+    <string name="Provide_Preference">Please provide your preference</string>
+    <string name="Q1">Q1</string>
+    <string name="Question">Question</string>
+    <string name="choice1">Very strong dislike/ avoid at all costs</string>
+    <string name="choice2">Dislike/ sometimes avoid</string>
+    <string name="choice3">Don’t care</string>
+    <string name="choice4">Like/ sometimes prefer</string>
+    <string name="choice5">Very strong like/ always prefer</string>
+    <string name="next_ques">Next Question ></string>
+    <string name="Signup">Signup</string>
+    <string name="Name">Name</string>
+    <string name="Email">Email</string>
+    <string name="mob_num">Mobile number</string>
+    <string name="next">Next ></string>
 </resources>

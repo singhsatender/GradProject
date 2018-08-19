@@ -97,7 +97,6 @@ public class GeoNetworkRequest {
                     for (ResponseModel.Suggestion suggestion : suggestionList) {
                         String s = suggestion.getLabel();
                         System.out.println("label = " + s);
-
                         String[] split = s.split(",");
                         String result = " ";
                         for (int i = split.length - 1; i >= 0; i--) {

@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="Signup"
+            android:text="@string/Signup"
             android:textSize="20dp" />
 
         <android.support.design.widget.TextInputLayout
@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Name" />
+                android:hint="@string/Name" />
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -50,7 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Email"
+                android:hint="@string/Email"
                 android:inputType="textEmailAddress" />
         </android.support.design.widget.TextInputLayout>
 
@@ -66,7 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:ems="10"
-                android:hint="Mobile number" />
+                android:hint="@string/mob_num" />
         </android.support.design.widget.TextInputLayout>
 
 
@@ -77,7 +77,7 @@
             android:layout_gravity="bottom"
             android:layout_marginTop="40dp"
             android:background="@drawable/navigationbutton"
-            android:text="Next >"
+            android:text="@string/next"
             android:textAlignment="center"
             android:textColor="#FFF" />
 

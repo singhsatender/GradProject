@@ -1,15 +1,12 @@
 package com.stressfreeroads.wear;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.wearable.activity.WearableActivity;
-import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,11 +14,15 @@ import android.widget.TextView;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.sql.Timestamp;
 
-public class MainActivity extends WearableActivity implements  PPGService.OnChangeListener  {
+/**
+ * Controls the flow and all majority activities of Android wear
+ * Created by singh.
+ */
+
+public class MainActivity extends WearableActivity implements  HeartService.OnChangeListener  {
 
     private TextView mTextView;
     private Button mstart;
@@ -30,25 +31,20 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
     BufferedWriter writer;
     Long x;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
-                // as soon as layout is there...
-                mTextView = (TextView) findViewById(R.id.ppg);//
+        mTextView = (TextView) findViewById(R.id.ppg);
         mstart = (Button)findViewById(R.id.start);
-
-
 
         mstart.setOnClickListener(new View.OnClickListener() {
 
             public void onClick(View v) {
         // bind to our service.
-        bindService(new Intent(MainActivity.this, PPGService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
-                PPGService.setTimestamp(new Timestamp(System.currentTimeMillis()));
+        bindService(new Intent(MainActivity.this, HeartService.class), mServiceConnection, Service.BIND_AUTO_CREATE);
+                HeartService.setTimestamp(new Timestamp(System.currentTimeMillis()));
                 fileManager();
             }
         });
@@ -65,17 +61,17 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
                 }
             }
         });
-
-
-
     }
 
+    /**
+     *  Service Connection to set change Listener
+     */
     private final ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder binder) {
             Log.d(LOG_TAG, "connected to service.");
             // set our change listener to get change events
-            ((PPGService.PPGServiceBinder) binder).setChangeListener(MainActivity.this);
+            ((HeartService.HeartServiceBinder) binder).setChangeListener(MainActivity.this);
         }
 
         @Override
@@ -84,6 +80,9 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
         }
     };
 
+    /**
+     * Handle logic to create a file in Android storage to collect PPG and Heart Rate.
+     */
     protected  void fileManager(){
         // Code here executes on main thread after user presses button
         x = System.currentTimeMillis() / 1000;
@@ -91,7 +90,7 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
             // Creates a file in the primary external storage space of the
             // current application.
             // If the file does not exists, it is created.
-            File testFile = new File(this.getExternalFilesDir(null), "PPGData.txt");
+            File testFile = new File(this.getExternalFilesDir(null), "HeartData.txt");
             if (!testFile.exists())
                 testFile.createNewFile();
 
@@ -126,8 +125,5 @@ public class MainActivity extends WearableActivity implements  PPGService.OnChan
     @Override
     protected void onStop(){
         super.onStop();
-
     }
-
-
 }

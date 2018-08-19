@@ -10,7 +10,7 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
- * DB Manager to manage user profile data. Its not used yet as we are file system for easy access.
+ * DB Manager to manage user profile data. Its not used yet as we are using file system for easy access.
  * Created by singh on 4/21/2018.
  */
 

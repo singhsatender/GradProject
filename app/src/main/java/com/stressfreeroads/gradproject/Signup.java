@@ -17,25 +17,20 @@ import android.widget.Toast;
 public class Signup extends AppCompatActivity {
 
     private Button btnSignUpNext;
+    SharedPreferences pref;
     private EditText signupInputName, signupInputEmail, signupInputMobileno;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //determine homepage
-        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
-//        String name= pref.getString("name", null); // getting String
-//        String email = pref.getString("email", null);
-//        String mob= pref.getString("mobile_num", null);
-
+        pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
         String restoredText = pref.getString("name", null);
         if (restoredText != null) {
             Intent i = new Intent(getApplicationContext(), MapHomePage.class);
             startActivity(i);
         } else {
-
             setContentView(R.layout.activity_signup);
-
             signupInputName = (EditText) findViewById(R.id.signup_input_name);
             signupInputEmail = (EditText) findViewById(R.id.signup_input_email);
             signupInputMobileno = (EditText) findViewById(R.id.signup_input_mobile_no);
@@ -50,10 +45,7 @@ public class Signup extends AppCompatActivity {
                     if (TextUtils.isEmpty(signupInputName.getText()) || TextUtils.isEmpty(signupInputMobileno.getText()) || TextUtils.isEmpty(signupInputEmail.getText())) {
                         Toast.makeText(getApplicationContext(), "One or more fields are empty.", Toast.LENGTH_SHORT).show();
                     } else {
-
-                        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
                         SharedPreferences.Editor editor = pref.edit();
-
                         editor.putString("name", signupInputName.getText().toString());
                         editor.putString("email", signupInputEmail.getText().toString());
                         editor.putString("mobile_num", signupInputMobileno.getText().toString());

@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Please provide your preference"
+        android:text="@string/Provide_Preference"
         android:textSize="20sp" />
 
     <TextView
@@ -19,7 +19,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
-        android:text="Q1"
+        android:text="@string/Q1"
         android:textSize="20sp" />
 
     <TextView
@@ -41,7 +41,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="40dp"
             android:background="@drawable/custom_button_background"
-            android:text="Very strong dislike/ avoid at all costs" />
+            android:text="@string/choice1" />
 
         <RadioButton
             android:id="@+id/ansBtn2"
@@ -49,7 +49,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/custom_button_background"
-            android:text="Dislike/ sometimes avoid" />
+            android:text="@string/choice2" />
 
         <RadioButton
             android:id="@+id/ansBtn3"
@@ -57,7 +57,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/custom_button_background"
-            android:text="Don’t care" />
+            android:text="@string/choice3" />
 
         <RadioButton
             android:id="@+id/ansBtn4"
@@ -65,7 +65,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/custom_button_background"
-            android:text="Like/ sometimes prefer" />
+            android:text="@string/choice4" />
 
         <RadioButton
             android:id="@+id/ansBtn5"
@@ -73,7 +73,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="6dp"
             android:background="@drawable/custom_button_background"
-            android:text="Very strong like/ always prefer" />
+            android:text="@string/choice5" />
 
     </RadioGroup>
 
@@ -87,7 +87,7 @@
         android:onClick="showNextQuestion"
         android:background="@drawable/navigationbutton"
         android:textColor="#FFF"
-        android:text="Next Question >"
+        android:text="@string/next_ques"
         android:paddingBottom="2dp"
         android:textAlignment="center"/>
 

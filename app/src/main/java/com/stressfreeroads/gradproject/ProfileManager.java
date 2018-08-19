@@ -45,8 +45,7 @@ public class ProfileManager extends AppCompatActivity {
 
     ArrayList<String> questionArray = new ArrayList<>(Arrays.asList(questions));
 
-
-    public static String[] answers = new String[7];
+    //public static String[] answers = new String[7];
     SharedPreferences pref;
 
     @Override
@@ -67,7 +66,6 @@ public class ProfileManager extends AppCompatActivity {
 //        dbManager = new DBManager(getApplicationContext());
 //        dbManager.open();
          pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
-
 
         showNextQuestion(next);
     }
@@ -97,7 +95,6 @@ public class ProfileManager extends AppCompatActivity {
 
                 questionNum.setText("Q" + quesCount1);
 
-
                 if (quesCount1 == questions.length) {
                     next.setText("Submit Answers");
                 }
@@ -125,15 +122,13 @@ public class ProfileManager extends AppCompatActivity {
                 } else {
                     radioGroup.clearCheck();
                 }
-
                 quesCount1++;
-
             }
         }
     }
 
     /**
-     * Saves answers in to an Array.
+     * Saves answers in to Shared preferences.
      */
     public void saveAnswers() {
         //Get selected answer
@@ -145,7 +140,6 @@ public class ProfileManager extends AppCompatActivity {
         String answer = (String) radioButton.getText();
 
         SharedPreferences.Editor editor = pref.edit();
-
         editor.putString("ans"+(quesCount1 + 1), answer);
         editor.commit(); // commit changes
     }
@@ -154,6 +148,4 @@ public class ProfileManager extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
-
-
 }

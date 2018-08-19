@@ -11,25 +11,22 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.wearable.Node;
-import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
-import java.util.List;
 
 /**
+ * Calculate Heart Rate for first 40 seconds and then automatically switches to calculate
+ * PPG for rest of the trip.
  * Created by satender.
  */
-public class PPGService extends Service implements SensorEventListener {
+public class HeartService extends Service implements SensorEventListener {
 
     private SensorManager mSensorManager;
     private int currentValue=0;
-    private static final String LOG_TAG = "MyPPG";
-    private IBinder binder = new PPGServiceBinder();
+    private static final String LOG_TAG = "HeartService";
+    private IBinder binder = new HeartServiceBinder();
     private OnChangeListener onChangeListener;
     private GoogleApiClient mGoogleApiClient;
     public static Timestamp mTimestamp;
@@ -43,7 +40,7 @@ public class PPGService extends Service implements SensorEventListener {
      *
      * Binder for this service. The binding activity passes a listener we send the heartbeat to.
      */
-    public class PPGServiceBinder extends Binder {
+    public class HeartServiceBinder extends Binder {
         public void setChangeListener(OnChangeListener listener) {
             onChangeListener = listener;
             // return currently known value
@@ -103,12 +100,10 @@ public class PPGService extends Service implements SensorEventListener {
                     }
                 }
             }
-
         } else {
             // is this a heartbeat event and does it have data?
             if (sensorEvent.sensor.getType() == 33171027 && sensorEvent.values.length > 0) {
                 int newValue = Math.round(sensorEvent.values[0]);
-                //Log.d(LOG_TAG,sensorEvent.sensor.getName() + " changed to: " + newValue);
                 // only do something if the value differs from the value before and the value is not 0.
                 if (currentValue != newValue && newValue != 0) {
                     // save the new value
@@ -122,13 +117,14 @@ public class PPGService extends Service implements SensorEventListener {
         }
     }
 
-
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-
     }
 
+    /**
+     * Set Current Timestamp to enable switching between Heart Beat and PPG recording.s
+     * @param timestamp
+     */
     public static void setTimestamp(Timestamp timestamp){
         mTimestamp = timestamp;
     }

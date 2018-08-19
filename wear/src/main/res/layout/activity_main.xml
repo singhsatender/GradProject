@@ -28,14 +28,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|left"
-            android:text="start"/>
+            android:text="@string/Start"/>
 
         <Button
             android:id="@+id/stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|right"
-            android:text="stop"/>
+            android:text="@string/Stop"/>
     </FrameLayout>
 </android.support.wear.widget.BoxInsetLayout>
 

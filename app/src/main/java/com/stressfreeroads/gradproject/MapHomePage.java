@@ -97,14 +97,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private GeoCoordinate destination = null;
     private Boolean isNavigationPossible = false;
     private TextView dist_time_text;
-    private Date current;
-    private Date dateval;
-    private long dateDiffBetman;
-    private long datestored;
     private long timeleft;
     private long hours;
-    private long min;
-    private RouteTta rrta;
     private static String opt1 = "Very strong dislike/ avoid at all costs";
     private static String opt2 = "Dislike/ sometimes avoid";
     private static String opt3 = "Don’t care";
@@ -445,7 +439,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     }
 
     /**
-     * Fetch Current location and Add marker.S
+     * Fetch Current location and Add marker.
      */
     private void currentLocation() {
 
@@ -457,7 +451,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         m_positionIndicatorFixed.setVisible(false);
         m_positionIndicatorFixed.setCoordinate(map.getCenter());
         map.addMapObject(m_positionIndicatorFixed);
-        //TODO:what is this?  m_mapObjectList.add(m_positionIndicatorFixed);
         mapFragment.getPositionIndicator().setVisible(false);
 
         // create a map marker to show current position
@@ -518,7 +511,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         }
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -537,9 +529,8 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
         String ans3= pref.getString("ans3", null);
-        String ans6= pref.getString("ans6", null);// getting String
+        String ans6= pref.getString("ans6", null);
 
-       // String [] answers = ProfileManager.getAnswers();
         /* Initialize a CoreRouter */
         CoreRouter coreRouter = new CoreRouter();
 
@@ -551,14 +542,14 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
          */
         RouteOptions routeOptions = new RouteOptions();
 
-        /* Disable highway in this route. 1 */
+        /* Disable highway based on profile */
         if(ans3.equals(opt1) ||ans3.equals(opt2)) {
             routeOptions.setHighwaysAllowed(false);
         } else {
             routeOptions.setHighwaysAllowed(true);
         }
 
-        /* Calculate the fastest route available. 4 */
+        /* Select routetype based on profile */
         if(ans6.equals(opt1) || ans6.equals(opt2)) {
             routeOptions.setRouteType(RouteOptions.Type.FASTEST);
         } else if(ans6.equals(opt4) || ans6.equals(opt5)){
@@ -763,7 +754,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         m_navigationManager.addRerouteListener(
                 new WeakReference<NavigationManager.RerouteListener>(m_reRouteListener));
 
-
     }
 
     /**
@@ -875,7 +865,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         @Override
         public void onRunningStateChanged() {
-
         }
 
         @Override
@@ -920,7 +909,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
     private void AddTextBox(GeoCoordinate geo, float dist, int getTimesec) {
 
         dist_time_text = (TextView) findViewById(R.id.distance_time);
-
         m_nextManeuver = (TextView) findViewById(R.id.nextManeuver);
 
         //calculate distance
@@ -941,7 +929,6 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
 
         dist_time_text.setText("dist: " + distance + " km\n" + "Time:" + Time);
         dist_time_text.setVisibility(View.VISIBLE);
-
     }
 
     /**
@@ -975,8 +962,7 @@ public class MapHomePage extends AppCompatActivity implements PositioningManager
         }
     }
 
-    /*File Management
-    * TODO:Refactor it to new file*/
+    /*Initialize file to save trip data*/
     protected void fileManager() {
         try {
             // Creates a file in the primary external storage space of the current application.

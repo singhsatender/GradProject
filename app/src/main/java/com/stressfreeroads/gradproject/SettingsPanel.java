@@ -68,7 +68,5 @@ public class SettingsPanel {
                 m_activity.startActivity(i);
             }
         });
-
-
     }
 }

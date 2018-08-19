@@ -25,7 +25,7 @@
         android:textColor="#000"
         android:background="#DCDCDC"
         android:textSize="20dp"
-        android:text="NextManeuver"
+        android:text="@string/NextManeuver"
         android:visibility="gone"/>
 
     <LinearLayout
@@ -43,7 +43,7 @@
             android:layout_width="fill_parent"
             android:layout_height="35dp"
             android:paddingTop="@dimen/abc_action_bar_subtitle_bottom_margin_material"
-            android:text="MAP SCHEMES"
+            android:text="@string/MAP_SCHEMES"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="#fffcfc" />
 
@@ -95,7 +95,7 @@
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:padding="10dp"
-            android:text="Edit Profile"
+            android:text="@string/Edit_Profile"
             android:background="@drawable/generic_button_bar_i"
             android:layout_marginBottom="50dp"
             />
@@ -137,7 +137,7 @@
         android:layout_marginLeft="120dp"
         android:background="@drawable/navigationbutton"
         android:padding="5dp"
-        android:text="Start Navigation"
+        android:text="@string/Start_Navigation"
         android:textColor="#FFF"
         android:visibility="gone" />
 
